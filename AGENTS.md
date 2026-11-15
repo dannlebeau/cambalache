@@ -12,7 +12,7 @@ Mercado de cartas TCG (Yu-Gi-Oh!, Pokémon, Mitos y Leyendas) con subastas en co
 
 Reglas de arquitectura:
 
-- Frontend estático (HTML + JS vanilla, sin build) y backend en **Supabase** (Auth, Postgres, Realtime, `pg_cron`).
+- Frontend en migración (ver `PLAN.md`, paso 1): el sitio actual es estático (HTML + JS vanilla, sin build) en la raíz; la app nueva es **Nuxt (Vue 3 + TypeScript, SSR)** en `web/`, y reemplaza al sitio página por página. Backend en **Supabase** (Auth, Postgres, Realtime, `pg_cron`).
 - **Toda regla de negocio vive en Postgres** (`supabase/migrations`): funciones `security definer` con `set search_path = ''` y nombres calificados, más RLS de solo lectura. El navegador nunca escribe tablas directo, solo llama funciones (RPC). Una regla nueva va en una migración nueva con su prueba pgTAP, no en JS.
 - El **pago es simulado** (`simular_pago`) y la UI debe decirlo donde se paga ("Pagar (simulado)", avisos "Pagos en modo prueba", `terminos.html`, `acerca-de.html`).
 - El canasto, los intercambios y sus puntos siguen en `localStorage`, simulados.
@@ -26,24 +26,31 @@ Reglas de arquitectura:
 | `assets/css/` | `tema.css` (tokens claro/oscuro), `base.css` (páginas del mercado) |
 | `supabase/migrations/` | Esquema, funciones, RLS, Realtime y `pg_cron` |
 | `supabase/tests/` | Pruebas pgTAP |
-| `dev-server.js` | Servidor estático local (Node, sin dependencias) |
+| `dev-server.js` | Servidor estático local del sitio actual (Node, sin dependencias) |
+| `web/` | App Nuxt nueva: `app/` (páginas, componentes, composables, utils, CSS) y `test/` (Vitest) |
+| `Dockerfile`, `compose.yaml`, `.env.example` | Imagen de la app Nuxt y prueba local en contenedor |
 
 ## Comandos
 
 ```sh
-node dev-server.js   # http://localhost:3000
+node dev-server.js   # sitio actual: http://localhost:3000
+npm ci               # dependencias (lockfile congelado)
+npm run web:dev      # app Nuxt en desarrollo: http://localhost:3001
+npm run web:lint && npm run web:typecheck && npm run web:test
+docker compose up --build   # app Nuxt como en producción: http://localhost:3001
 supabase db start    # Postgres local con migraciones (Docker)
 supabase test db     # pruebas pgTAP
 ```
 
 ## Convenciones de código
 
-- JS vanilla en scripts clásicos (`<script src>`), sin módulos ni build. `supabase-js` viene de jsDelivr con versión exacta y SRI.
+- **Sitio actual (raíz):** JS vanilla en scripts clásicos (`<script src>`), sin módulos ni build. `supabase-js` viene de jsDelivr con versión exacta y SRI.
 - Todo dato que venga de una API, de la base o del usuario se escribe con `escapeHtml` o `textContent`, nunca directo en `innerHTML`.
 - Los errores de las funciones de la base se escriben en español con `raise exception`; la UI los muestra tal cual vía `mensajeError` (`auth.js`).
 - Botones que envían algo usan `conBoton` (`mercado.js`) para evitar el doble envío.
-- El proyecto es JavaScript con `package.json` (`npm run dev`). Las dependencias de npm, el lockfile y las herramientas de desarrollo (ESLint, chequeo de tipos) están permitidas; el sitio de producción sigue sin build. No introducir frameworks de UI ni bundlers sin pedirlo.
-- Colores como tokens CSS en `assets/css/tema.css`, con su versión oscura (ver selector de tema en `dotfiles/AGENTS.md` → Webs).
+- El proyecto es JavaScript con `package.json` y npm workspaces (`web`). Versiones exactas en `package.json` y lockfile versionado; `allowScripts` en la raíz decide qué paquetes corren scripts de instalación. No agregar otros frameworks de UI sin pedirlo.
+- **App Nuxt (`web/`):** TypeScript estricto; prohibido `v-html` con datos de la API, de la base o del usuario; configuración pública por `NUXT_PUBLIC_*` (ver `.env.example`); todo cambio pasa lint, `typecheck`, Vitest y se prueba con `docker compose up --build`.
+- Colores como tokens CSS en `assets/css/tema.css` (y su copia en `web/app/assets/css/tema.css` mientras convivan), con su versión oscura (ver selector de tema en `dotfiles/AGENTS.md` → Webs).
 
 ## Datos sensibles a cambios
 

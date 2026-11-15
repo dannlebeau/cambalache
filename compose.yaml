@@ -1,0 +1,14 @@
+# Prueba local de la app Nuxt tal como corre en producción: docker compose up --build
+# y abrir http://localhost:3001 (el 3000 queda para el sitio actual, node dev-server.js). Copia .env.example a .env con los datos de un proyecto
+# Supabase de prueba (en el sub-paso 1a la app todavía no usa Supabase; sin .env levanta igual).
+services:
+  web:
+    build: .
+    ports:
+      - "127.0.0.1:3001:3000"
+    env_file:
+      - path: .env
+        required: false
+    read_only: true
+    security_opt:
+      - no-new-privileges:true

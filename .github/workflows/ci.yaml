@@ -31,3 +31,50 @@ jobs:
 
       - name: Pruebas pgTAP
         run: supabase test db
+
+  # App Nuxt (web/): dependencias con el lockfile congelado, lint, tipos, pruebas y build.
+  web:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Instalar Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      # npm ci respeta allowScripts de package.json (esbuild queda sin postinstall) y corre
+      # el postinstall de web (nuxt prepare), que genera los tipos que usan lint y typecheck.
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Lint
+        run: npm run web:lint
+
+      - name: Tipos
+        run: npm run web:typecheck
+
+      - name: Pruebas
+        run: npm run web:test
+
+      - name: Build
+        run: npm run web:build
+
+  # Construye la misma imagen que se prueba en local con compose.
+  imagen:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Construir imagen
+        run: docker build -t cambalache-web:ci .

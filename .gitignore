@@ -29,3 +29,9 @@ Desktop.ini
 
 # Respaldos de scripts de instalación
 *.bak-*
+
+# Nuxt (web/)
+.nuxt/
+.output/
+.nitro/
+.data/
