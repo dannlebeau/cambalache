@@ -23,7 +23,7 @@ Quien vende envía su carta, Cambalache la revisa y la custodia, y se subasta 3 
 
 ### Dependencias
 
-- Node.js 18+ (solo para el servidor local; el sitio no tiene dependencias de npm ni build)
+- Node.js 24+ (solo para el servidor local y las herramientas de desarrollo; el sitio no tiene build)
 - Un proyecto de [Supabase](https://supabase.com) para cuentas y subastas (el plan gratis alcanza)
 - Opcional: [Supabase CLI](https://supabase.com/docs/guides/cli) y Docker, para correr las pruebas de la base en local
 
@@ -43,7 +43,7 @@ Sin estos pasos, el catálogo y los intercambios funcionan igual, pero las cuent
 ## Uso
 
 ```sh
-node dev-server.js
+npm run dev
 ```
 
 Abre `http://localhost:3000` (el puerto se cambia con la variable `PORT`). También funciona con cualquier otro servidor estático (`npx serve .`); lo único que no anda bien es abrir los `.html` directo como `file://`.
