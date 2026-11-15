@@ -1,6 +1,6 @@
 {
   "name": "cambalache",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "description": "Mercado de cartas TCG con subastas en consignación e intercambios",
   "license": "UNLICENSED",
@@ -20,5 +20,8 @@
   },
   "allowScripts": {
     "esbuild": false
+  },
+  "devDependencies": {
+    "supabase": "2.122.0"
   }
 }

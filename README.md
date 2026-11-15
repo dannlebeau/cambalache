@@ -26,7 +26,7 @@ Quien vende envía su carta, Cambalache la revisa y la custodia, y se subasta 3 
 - Node.js 24+ (servidor local del sitio actual y app Nuxt nueva en `web/`)
 - Docker con `compose`, para probar la app Nuxt como en producción
 - Un proyecto de [Supabase](https://supabase.com) para cuentas y subastas (el plan gratis alcanza)
-- Opcional: [Supabase CLI](https://supabase.com/docs/guides/cli) y Docker, para correr las pruebas de la base en local
+- Para el Supabase local y las pruebas de la base: Docker ([Supabase CLI](https://supabase.com/docs/guides/cli) viene en las dependencias de desarrollo, se usa con `npx supabase`)
 
 ```sh
 git clone https://github.com/dannlebeau/cambalache.git
@@ -55,11 +55,14 @@ El frontend se está migrando a Nuxt en `web/` (ver [`PLAN.md`](PLAN.md)). Mient
 
 ```sh
 npm ci                       # dependencias con el lockfile
+npx supabase start           # Supabase local (Auth + Postgres) con las migraciones, en http://127.0.0.1:54321
+cp .env.example .env         # y pega en NUXT_PUBLIC_SUPABASE_KEY la PUBLISHABLE_KEY de `npx supabase status`
 npm run web:dev              # desarrollo en http://localhost:3001
-docker compose up --build    # como en producción, en http://localhost:3001
+docker compose -f compose.yaml -f compose.supabase-local.yaml up --build   # imagen de producción contra el Supabase local
+docker compose up --build    # imagen de producción contra un proyecto Supabase de prueba en la nube (.env)
 ```
 
-Para la configuración, copia `.env.example` a `.env` (todavía no la usa ninguna página).
+La app necesita el `.env` (URL y publishable key de Supabase); sin él, las páginas responden error 500. Ya tiene cuentas: crear cuenta (`/registro`), iniciar sesión (`/entrar`), salir y el cambio obligatorio de la contraseña temporal (`/cambiar-password`). Una cuenta bloqueada no puede quedar con sesión. La sesión va en una cookie, así que el servidor ya pinta el nav con el nombre del usuario.
 
 Cada página tiene en el nav un selector de tema que rota Sistema → Claro → Oscuro y recuerda la elección en el navegador.
 
@@ -128,8 +131,8 @@ Desde ahí, los admins se gestionan en **Admin → Usuarios**: la persona crea s
 ## Pruebas
 
 ```sh
-supabase db start   # Postgres local con las migraciones aplicadas (requiere Docker)
-supabase test db    # pruebas pgTAP de supabase/tests
+npx supabase db start   # Postgres local con las migraciones aplicadas (requiere Docker)
+npx supabase test db    # pruebas pgTAP de supabase/tests
 ```
 
 ```sh

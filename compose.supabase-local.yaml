@@ -1,0 +1,11 @@
+# Override para probar la imagen contra el Supabase local (npx supabase start):
+#   docker compose -f compose.yaml -f compose.supabase-local.yaml up --build
+# Con red del host, el servidor (SSR) y el navegador llegan al mismo http://127.0.0.1:54321.
+# En Linux funciona directo; en Docker Desktop (macOS/Windows) hay que activar "host networking".
+services:
+  web:
+    network_mode: host
+    ports: !reset []
+    environment:
+      HOST: 127.0.0.1
+      PORT: "3001"

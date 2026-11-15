@@ -1,0 +1,24 @@
+/* Estilos de la app Nuxt (barra, botones y formularios). Los colores vienen de tema.css. */
+.barra{flex-wrap:wrap;gap:.75rem}
+.barra .error{flex-basis:100%;margin:0}
+.nav-acciones{flex-wrap:wrap;justify-content:flex-end}
+.nav-usuario{font-weight:600;max-width:14rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.etiqueta-admin{font-size:.75rem;font-weight:700;color:var(--accent-light);border:1px solid var(--accent);border-radius:999px;padding:.1rem .55rem}
+
+.boton{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.55rem 1rem;border-radius:999px;border:1px solid var(--accent);background:var(--accent);color:#fff;font:inherit;font-weight:600;text-decoration:none;cursor:pointer;transition:background .2s,border-color .2s}
+.boton:hover{background:var(--accent-dim);border-color:var(--accent-dim)}
+.boton:disabled{opacity:.6;cursor:progress}
+.boton-secundario{background:none;color:var(--text);border-color:var(--border)}
+.boton-secundario:hover{background:var(--bg3);border-color:var(--accent)}
+.boton:focus-visible,.formulario-cuenta input:focus-visible,.tema-toggle:focus-visible{outline:2px solid var(--accent-light);outline-offset:2px}
+
+.formulario-cuenta{max-width:26rem;margin:2rem auto;padding:1.5rem;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r)}
+.formulario-cuenta h1{margin-top:0;font-size:1.5rem}
+.formulario-cuenta form{display:flex;flex-direction:column;gap:.4rem}
+.formulario-cuenta label{font-size:.9rem;color:var(--muted);margin-top:.4rem}
+.formulario-cuenta input{font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:.6rem;padding:.55rem .75rem}
+.formulario-cuenta .boton{margin-top:.9rem}
+.formulario-cuenta .nota{color:var(--muted);font-size:.9rem}
+.formulario-cuenta a{color:var(--accent-light)}
+.error{color:var(--error);font-size:.9rem}
+.ok{color:var(--ok);font-size:.9rem}
