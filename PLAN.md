@@ -1,6 +1,6 @@
 # PLAN — Backend propio: pagos reales, correos y fotos
 
-> Estado: **borrador, pendiente de aprobación**. Reemplaza al plan del mercado de subastas (ya mezclado en `main`, ver `CHANGELOG.md` 0.2.0). Nada de este plan se implementa hasta que se apruebe el paso 0.
+> Estado: **decisiones técnicas tomadas (2026-11-15); pendiente de aprobar el uso de npm en el frontend y los temas legales/tributarios**. Reemplaza al plan del mercado de subastas (ya mezclado en `main`, ver `CHANGELOG.md` 0.2.0). Nada de este plan se implementa hasta que se apruebe el paso 0.
 
 ## 1. Objetivo
 
@@ -38,7 +38,13 @@ Opciones a elegir:
 Cada paso termina en su propia rama + PR, con CHANGELOG y verificación en CI.
 
 ### Paso 0 — Decisiones del usuario
-- Base de datos (sección 3), proveedor de pagos (Flow, Webpay Plus o Mercado Pago), proveedor de correo (Resend o Postmark) y dónde se hospeda el backend (Fly.io, Railway, Cloud Run o un VPS).
+- **Decididas:**
+  - Base de datos: Postgres en **Supabase gestionado** (no MongoDB, no self-hosted por ahora; revisar self-hosted solo si el costo de Supabase se vuelve el problema, con respaldos externos y restauración ensayada).
+  - Pagos: **Flow** (cotizar comisiones y requisitos de alta antes de integrar).
+  - Correo: **Resend** (cambiable a Amazon SES después, porque la cola es propia).
+  - Backend: **TypeScript sobre Node LTS con Fastify**, en un **VPS Hostinger KVM2** con Docker Compose, Caddy y Cloudflare delante; imagen en GHCR desplegada por SHA. Solo corre la API: la base no va en el VPS.
+  - Web estática: Cloudflare Pages.
+- **Pendientes del usuario:** aprobar agregar `package.json`/npm al frontend (paso 1, choca con `AGENTS.md`) y los temas legales de abajo.
 - Aspectos legales y tributarios en Chile: cobrar por cuenta de terceros (consignación), boleta/factura electrónica en el SII, retención del 90% al vendedor, términos y privacidad. **Consultar a un contador/abogado antes de cobrar de verdad.** Este plan no los resuelve.
 - Demostración: decisiones anotadas en este archivo.
 

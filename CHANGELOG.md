@@ -8,7 +8,7 @@ El formato sigue [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) 
 
 ### Changed
 
-- `PLAN.md` pasa a describir el backend propio (pagos reales, correos y fotos), el diagnóstico del stack de JS y la decisión pendiente de base de datos. Solo documentación.
+- `PLAN.md` pasa a describir el backend propio (pagos reales, correos y fotos), el diagnóstico del stack de JS y las decisiones de stack (Postgres en Supabase gestionado, Flow, Resend, TypeScript con Fastify en un VPS). Solo documentación.
 
 ## [0.2.0] - 2026-11-15
 
