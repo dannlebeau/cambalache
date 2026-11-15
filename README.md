@@ -1,19 +1,20 @@
 # Cambalache
 
-Explorador de cartas TCG (Yu-Gi-Oh!, Pokémon, Mitos y Leyendas) con cuenta y canasto para intercambiar o vender.
+Mercado de cartas TCG (Yu-Gi-Oh!, Pokémon, Mitos y Leyendas): subastas en consignación de 3 días e intercambios.
 
-Sitio 100% estático: el catálogo es real y en vivo, pero **el pago, la liberación de fondos y la confirmación de la otra parte son simulados** (ver [Qué es real y qué es simulado](#qué-es-real-y-qué-es-simulado)). El plan y el estado de cada paso están en [`PLAN.md`](PLAN.md); los cambios, en [`CHANGELOG.md`](CHANGELOG.md).
+Quien vende envía su carta, Cambalache la revisa y la custodia, y se subasta 3 días con pujas en vivo y compra inmediata. Cambalache se queda con el 10% del monto final y el vendedor con el 90%. **Los pagos todavía son simulados** (ver [Qué es real y qué es simulado](#qué-es-real-y-qué-es-simulado)). El plan y el estado de cada paso están en [`PLAN.md`](PLAN.md); los cambios, en [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Índice
 
 - [Instalación](#instalación)
 - [Uso](#uso)
 - [Estructura](#estructura)
+- [Cómo funciona el mercado](#cómo-funciona-el-mercado)
 - [Qué es real y qué es simulado](#qué-es-real-y-qué-es-simulado)
+- [Administración](#administración)
+- [Pruebas](#pruebas)
 - [De dónde salen los datos](#de-dónde-salen-los-datos)
-- [Cómo funciona el canasto y el flujo simulado](#cómo-funciona-el-canasto-y-el-flujo-simulado)
-- [Por qué es un prototipo y no la plataforma "oficial"](#por-qué-es-un-prototipo-y-no-la-plataforma-oficial)
-- [Pendiente para que esto sea real](#pendiente-para-que-esto-sea-real)
+- [Pendiente para operar con dinero real](#pendiente-para-operar-con-dinero-real)
 - [Aviso legal](#aviso-legal)
 - [Contribuir](#contribuir)
 - [Licencia](#licencia)
@@ -23,11 +24,21 @@ Sitio 100% estático: el catálogo es real y en vivo, pero **el pago, la liberac
 ### Dependencias
 
 - Node.js 18+ (solo para el servidor local; el sitio no tiene dependencias de npm ni build)
+- Un proyecto de [Supabase](https://supabase.com) para cuentas y subastas (el plan gratis alcanza)
+- Opcional: [Supabase CLI](https://supabase.com/docs/guides/cli) y Docker, para correr las pruebas de la base en local
 
 ```sh
 git clone https://github.com/dannlebeau/cambalache.git
 cd cambalache
 ```
+
+### Base de datos (una vez por proyecto Supabase)
+
+1. Crea el proyecto en Supabase y, en **SQL Editor**, ejecuta [`supabase/migrations/20261115000000_mercado_subastas.sql`](supabase/migrations/20261115000000_mercado_subastas.sql). Crea las tablas, las reglas de la subasta, la RLS, Realtime y el cierre automático con `pg_cron`. Si `pg_cron` no está habilitado, habilítalo en **Database → Extensions** y vuelve a ejecutar el último bloque del archivo.
+2. En **Authentication → URL Configuration**, pon la URL del sitio como *Site URL* (para el link de confirmación de correo).
+3. Copia la *Project URL* y la *publishable key* (**Project Settings → API**) en [`assets/js/config.js`](assets/js/config.js). Ambas son públicas por diseño; nunca pongas ahí la `service_role` key.
+
+Sin estos pasos, el catálogo y los intercambios funcionan igual, pero las cuentas y el mercado muestran "no está conectado".
 
 ## Uso
 
@@ -35,7 +46,7 @@ cd cambalache
 node dev-server.js
 ```
 
-Abre `http://localhost:3000` (el puerto se cambia con la variable `PORT`). También funciona con cualquier otro servidor estático (`npx serve .`); lo único que no anda bien es abrir los `.html` directo como `file://`, porque algunos navegadores son más estrictos con `fetch()` a otros dominios desde ahí.
+Abre `http://localhost:3000` (el puerto se cambia con la variable `PORT`). También funciona con cualquier otro servidor estático (`npx serve .`); lo único que no anda bien es abrir los `.html` directo como `file://`.
 
 Cada página tiene en el nav un selector de tema que rota Sistema → Claro → Oscuro y recuerda la elección en el navegador.
 
@@ -43,80 +54,92 @@ Cada página tiene en el nav un selector de tema que rota Sistema → Claro → 
 
 | Archivo | Qué hay |
 |---|---|
-| `index.html` | El catálogo: pestañas por juego, buscador, filtro por tipo, cartas **ordenadas por ID**, modal de detalle con **zoom** y **traducción al español**, y botón para agregar al canasto |
-| `canasto.html` | El flujo de intercambio/venta: cuenta (con puntos), tu canasto (cada carta "para intercambiar" o "para vender" con precio) y el estado paso a paso de cada operación |
-| `acerca-de.html` | De dónde sale cada catálogo, qué es real y qué es simulado, y el aviso legal |
-| `terminos.html` | Términos y Condiciones (borrador): tarifas, cuenta y verificación, responsabilidades y lo que falta definir antes de operar con dinero real. Hay que aceptarlos en `canasto.html` antes de iniciar cualquier operación |
-| `privacidad.html` | Política de privacidad de referencia |
-| `assets/js/shared.js` | Metadatos de juegos, tarifas y todo lo que se guarda en `localStorage` (canasto, cuentas/sesión, transacciones) |
-| `assets/js/auth.js` | Modal de "Iniciar sesión" / "Crear cuenta", compartido por `index.html` y `canasto.html` |
-| `assets/js/app.js` | Lógica de `index.html` (fetch a las APIs, grilla, modal, zoom, traducción) |
-| `assets/js/canasto.js` | Lógica de `canasto.html` (canasto, transacciones, resumen) |
-| `assets/js/myl-data.js` | Catálogo de ejemplo de Mitos y Leyendas |
-| `assets/js/tema.js`, `assets/css/tema.css` | Selector de tema y tokens de color de todas las páginas |
-| `dev-server.js` | Servidor estático mínimo para probar en `localhost` |
+| `index.html` | Catálogo en vivo (YGOPRODeck, Pokémon TCG API) con zoom, traducción, "Agregar al canasto" y "Subastar esta carta" |
+| `subastas.html` | Subastas activas con cuenta regresiva; se actualiza sola cuando alguien puja |
+| `subasta.html` | Detalle de una subasta: pujas en vivo, historial anónimo y compra inmediata |
+| `publicar.html` | Formulario para publicar una carta (queda pendiente de envío) |
+| `mi-cuenta.html` | Compras (con pago simulado), pujas, cartas publicadas y cambio de contraseña |
+| `admin.html` | Recepción, subastas, ventas, devoluciones, reglas y usuarios |
+| `canasto.html` | Intercambios carta por carta (simulados y locales) |
+| `acerca-de.html`, `terminos.html`, `privacidad.html` | Textos del sitio |
+| `assets/js/auth.js` | Cliente de Supabase, cuentas (login, registro, cambio de contraseña) y nav |
+| `assets/js/mercado.js` | Ayudas comunes de las páginas del mercado |
+| `assets/js/shared.js` | Metadatos de juegos, formatos, canasto e intercambios en `localStorage` |
+| `assets/js/config.js` | URL y publishable key del proyecto Supabase |
+| `assets/js/<página>.js` | Lógica de cada página |
+| `assets/css/base.css`, `assets/css/tema.css` | Estilos de las páginas del mercado y tokens de color (claro/oscuro) |
+| `supabase/migrations/` | Esquema, reglas de negocio (funciones), RLS, Realtime y `pg_cron` |
+| `supabase/tests/` | Pruebas pgTAP de las reglas |
+| `dev-server.js` | Servidor estático mínimo para `localhost` |
 
-Todo el estado (cuentas, canasto, transacciones) vive en `localStorage` del navegador, así que las cuentas creadas en un navegador no existen en otro dispositivo.
+## Cómo funciona el mercado
+
+1. **Publicar:** desde el catálogo ("Subastar esta carta") o el canasto, quien vende indica el estado, un precio base y, si quiere, un precio mínimo. Queda *pendiente de envío*.
+2. **Custodia:** envía la carta con su código (`#id`). El admin la recibe, la revisa y la aprueba (sale a subasta) o la rechaza (*por devolver*).
+3. **Subasta de 3 días:** la primera puja parte del precio base; cada siguiente debe superar la actual en 5% o $500 (lo que sea mayor). Una puja en los últimos 5 minutos alarga el cierre 5 minutos.
+4. **Compra inmediata:** (puja actual o precio base) + 20%, redondeado a $100. Cierra la subasta al instante.
+5. **Cierre:** gana la puja más alta. Sin pujas, la carta se republica sola con −10%; si quedaría bajo el mínimo del vendedor, pasa a *por devolver*.
+6. **Pago:** el ganador tiene 48 horas. Si no paga, queda bloqueado y la carta pasa al siguiente mejor postor por su puja (o se republica si no hay).
+7. **Despacho y liquidación:** el admin marca la venta despachada y, al transferir, liquidada: 10% Cambalache, 90% vendedor.
+
+Todas las reglas viven en funciones de Postgres (`supabase/migrations`), no en el navegador: aunque alguien edite el JavaScript, no puede pujar bajo el mínimo, pujar su propia carta ni cerrar una subasta. Los porcentajes y plazos se editan en **Admin → Reglas**.
 
 ## Qué es real y qué es simulado
 
-El sitio ya no tiene un banner de "prototipo" en cada página, pero la señal de "esto es simulado" se dejó a propósito en los botones donde importa (pagar, confirmar) y en `acerca-de.html`/`terminos.html`: nadie debería mandar una carta real confiando en una protección que todavía no existe.
-
 | Parte | Estado |
 |---|---|
-| Catálogo de Yu-Gi-Oh! y Pokémon (datos, imágenes, búsqueda, orden por ID) | **Real**, en vivo desde YGOPRODeck y Pokémon TCG API |
-| Traducción de la descripción al español | **Real**, en vivo vía MyMemory Translation API |
-| Zoom a la imagen de la carta | **Real** |
-| Canasto (agregar cartas para intercambiar o vender) | **Real**, guardado en tu navegador |
-| Cuenta (crear cuenta / iniciar sesión) | **Real como mecanismo** (contraseña hasheada con SHA-256, nunca en texto plano), pero vive solo en `localStorage`: no es autenticación real entre dispositivos ni verifica que la persona sea quien dice ser |
-| Cobro de $500 CLP por carta en intercambio o 20% por venta | **Simulado**: no se procesa ningún pago real |
-| Confirmación de "la otra parte" en un intercambio o venta | **Simulado**: no hay una segunda persona real, se simula con un botón |
-| Liberación de fondos | **Simulado**: no hay fondos reales que liberar |
-| Puntos por intercambio/venta resuelta | **Real como mecánica**, pero solo local (no hay ranking ni cuenta compartida entre usuarios) |
+| Catálogo de Yu-Gi-Oh! y Pokémon, zoom y traducción | **Real**, en vivo desde APIs públicas |
+| Cuentas (registro con confirmación de correo, login, cambio de contraseña) | **Real** (Supabase Auth). No verifica identidad |
+| Publicar, aprobar, pujar en vivo, compra inmediata, cierres y republicación | **Real**, compartido entre todos los usuarios |
+| Pago del ganador | **Simulado**: el botón "Pagar (simulado)" no cobra nada |
+| Despacho y transferencia al vendedor | **Manual**: el admin los hace fuera del sitio y los marca en el panel |
+| Intercambios carta por carta, canasto y puntos | **Simulado y local** (`localStorage`) |
+
+## Administración
+
+El primer admin (master) se crea una sola vez:
+
+1. En Supabase, **Authentication → Users → Add user**, con el correo del admin y una contraseña temporal.
+2. En **SQL Editor**:
+
+   ```sql
+   update public.perfiles
+      set es_admin = true, debe_cambiar_password = true
+    where id = (select id from auth.users where email = 'correo-del-admin@ejemplo.cl');
+   ```
+
+3. Al iniciar sesión en el sitio, la app le obliga a cambiar la contraseña temporal.
+
+Desde ahí, los admins se gestionan en **Admin → Usuarios**: la persona crea su cuenta en el sitio y un admin le marca "Admin". Ahí también se bloquea o desbloquea a un usuario.
+
+## Pruebas
+
+```sh
+supabase db start   # Postgres local con las migraciones aplicadas (requiere Docker)
+supabase test db    # pruebas pgTAP de supabase/tests
+```
+
+El workflow `CI` corre estos dos comandos en cada PR.
 
 ## De dónde salen los datos
 
-- **Yu-Gi-Oh!**: [YGOPRODeck API](https://ygoprodeck.com/api-guide/), pública y gratuita. Catálogo completo (más de 14.000 cartas), con imágenes, ordenado por ID (`sort=id`).
-- **Pokémon**: [Pokémon TCG API](https://pokemontcg.io/), pública y gratuita. Catálogo completo (más de 20.000 cartas), con imágenes, ordenado por ID (`orderBy=id`).
-- **Traducción**: [MyMemory Translation API](https://mymemory.translated.net/), pública y gratuita, sin API key. Traduce la descripción de la carta de inglés a español al apretar "Traducir al español" en el modal de detalle. Tiene un límite de uso diario razonable para este volumen; si se necesita más, hay que sacar una cuenta con key propia.
-- **Mitos y Leyendas**: no hay una API pública equivalente. `assets/js/myl-data.js` tiene solo 6 nombres de ejemplo (figuras mitológicas de dominio público, sin texto de carta copiado de ningún lado), sin imágenes reales de cartas.
+- **Yu-Gi-Oh!**: [YGOPRODeck API](https://ygoprodeck.com/api-guide/), pública y gratuita, ordenada por ID.
+- **Pokémon**: [Pokémon TCG API](https://pokemontcg.io/), pública y gratuita, ordenada por ID.
+- **Traducción**: [MyMemory Translation API](https://mymemory.translated.net/), pública y gratuita, sin API key.
+- **Mitos y Leyendas**: no hay una API pública equivalente. `assets/js/myl-data.js` tiene solo 6 nombres de ejemplo (figuras mitológicas de dominio público), sin imágenes. Una carta de MyL se publica escribiendo su nombre a mano.
 
-Las tres APIs permiten llamadas directas desde el navegador (CORS abierto), así que no hace falta ningún proxy ni backend propio.
+## Pendiente para operar con dinero real
 
-## Cómo funciona el canasto y el flujo simulado
-
-1. Desde `index.html`, "Agregar al canasto" guarda la carta en tu canasto (`localStorage`), por defecto como "para intercambiar".
-2. En `canasto.html`, cada carta se puede pasar a "Vender" (con un precio en CLP) o dejar como "Intercambiar".
-3. Para iniciar cualquier intercambio o venta, primero hay que aceptar los `terminos.html` (checkbox en `canasto.html`) y tener una cuenta iniciada (botón arriba a la derecha en cualquier página).
-4. **Intercambio**: agrupa todas las cartas marcadas como "Intercambiar" en una transacción de $500 CLP **por cada carta** (tu parte; si son 3 cartas, $1.500 CLP). "Pagar mi parte" avanza el estado; como no hay una segunda persona real, el siguiente paso es un botón explícito "Simular: la otra parte pagó y confirmó", que resuelve la transacción y suma puntos.
-5. **Venta**: cada carta con precio se publica como una transacción independiente (comisión 20%, vendedor recibe 80%). Los pasos siguientes también son botones "Simular…" hasta llegar a "Resuelto".
-
-Nada de esto llama a MercadoPago ni a ningún procesador de pagos: es una máquina de estados en `localStorage`, pensada para mostrar y probar el flujo completo antes de decidir construir la parte de pagos real.
-
-## Por qué es un prototipo y no la plataforma "oficial"
-
-La idea original era construir directamente la plataforma "oficial y segura" de intercambio: cuenta verificada con Clave Única, cada intercambio con un prepago de $500 CLP por cada carta que cada persona pone en la operación, cada venta con 20% de comisión, y los fondos liberados recién cuando ambas partes confirman. Esas condiciones están escritas en detalle en `terminos.html` (borrador), para que estén claras desde ahora y no se inventen después de que la plataforma ya esté cobrando.
-
-Eso es, en la práctica, operar como intermediario financiero que retiene plata de terceros:
-
-- **Retener fondos hasta liberarlos (escrow)** no es algo que MercadoPago resuelva solo para un individuo: su modo Marketplace cobra comisión y liquida al vendedor casi de inmediato, no deja la plata "presa" esperando una confirmación mutua. Hacerlo bien y legal normalmente implica constituir una empresa, tener términos y condiciones reales, y revisar si aplica regulación de la CMF.
-- **Clave Única** no es un botón que se agrega al código: solo instituciones con convenio formal con el Estado pueden integrarla.
-
-Por eso el proyecto se construyó como **maqueta completa del flujo**, con estados simulados, en vez de simular menos pero con apariencia de que "ya funciona". Mismo criterio que `MP_ACCESS_TOKEN` sin configurar en `mercadoeficiente`/`new-essency`/`crosheep`: se ve y se usa completo, pero no cobra ni retiene nada real hasta que alguien decida dar ese paso con asesoría legal y de pagos de verdad.
-
-## Pendiente para que esto sea real
-
-- **Constituir Cambalache SpA**: `terminos.html` ya describe el modelo (tarifas, verificación, responsabilidades), pero falta que un abogado lo revise una vez que la sociedad exista, y resolver si el modelo de "retener y liberar fondos" necesita autorización regulatoria (CMF) antes de cobrar un peso real.
-- **Pagos reales con retención**: evaluar si el modo Marketplace de MercadoPago (u otro proveedor) puede aproximar el "prepago + liberación al confirmar", o si hace falta un proveedor de escrow dedicado.
-- **Verificación de identidad real**: evaluar Clave Única (requiere convenio institucional con el Estado) u otra alternativa; hoy crear una cuenta no confirma que la persona sea quien dice ser.
-- **Backend + base de datos real**: para que las cuentas existan más allá de un navegador, y para que dos personas distintas puedan verse mutuamente en un intercambio o compra/venta en vivo, en vez de simular "la otra parte" con un botón.
-- Catálogo real de Mitos y Leyendas, si aparece una fuente con permiso.
-- API keys propias de YGOPRODeck / Pokémon TCG API / MyMemory si el tráfico crece.
-- Dominio propio (hoy sin definir).
+- **Constituir Cambalache SpA** y revisar `terminos.html` y `privacidad.html` con un abogado; definir con un contador cómo se boletea la comisión y se declara el dinero de terceros.
+- **Pagos reales**: integrar un proveedor (por ejemplo, MercadoPago) en lugar de `simular_pago`, idealmente con su webhook marcando la venta como pagada.
+- **Envíos**: dirección de custodia, costos de envío y seguimiento.
+- **Fotos reales** de cada carta al recibirla (hoy se usa la imagen del catálogo).
+- **Disputas**: proceso de reclamos y reembolsos, y qué pasa si una carta se daña o pierde en custodia o en tránsito.
+- **Notificaciones por correo**: cuando te superan una puja, ganas o te toca pagar.
 
 ## Aviso legal
 
-Cambalache es un proyecto de fans, sin fines de lucro, sin afiliación con Konami (Yu-Gi-Oh!), The Pokémon Company, Nintendo, Game Freak (Pokémon), ni Onirica Studios/Toro Studios (Mitos y Leyendas). Todos los nombres, imágenes y textos de las cartas son propiedad de sus respectivos dueños; los de Yu-Gi-Oh! y Pokémon se muestran vía sus APIs públicas pensadas para este tipo de uso.
+Cambalache es un proyecto independiente, sin afiliación con Konami (Yu-Gi-Oh!), The Pokémon Company, Nintendo, Game Freak (Pokémon), ni Onirica Studios/Toro Studios (Mitos y Leyendas). Todos los nombres, imágenes y textos de las cartas son propiedad de sus respectivos dueños; los de Yu-Gi-Oh! y Pokémon se muestran vía sus APIs públicas pensadas para este tipo de uso.
 
 ## Contribuir
 

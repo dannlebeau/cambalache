@@ -1,7 +1,6 @@
-// Código compartido entre index.html y canasto.html: metadatos de juegos, escape de HTML,
-// y todo lo que se guarda en localStorage (canasto, cuentas/sesión, transacciones
-// simuladas). No hay servidor propio: las cuentas y el flujo de intercambio/venta viven en
-// este navegador (ver README y "Acerca de" para el detalle de qué es real y qué es simulado).
+// Código compartido por todas las páginas: metadatos de juegos, formato, escape de HTML, y lo
+// que se guarda en localStorage (canasto, transacciones de intercambio simuladas y puntos).
+// Las cuentas y el mercado de subastas viven en Supabase (ver assets/js/auth.js).
 
 const GAME_META = {
   ygo: { label: 'Yu-Gi-Oh!', short: 'YGO', color: 'var(--ygo)' },
@@ -10,14 +9,10 @@ const GAME_META = {
 };
 
 const CANASTO_KEY = 'cambalache_canasto';
-const USERS_KEY = 'cambalache_usuarios';
-const SESSION_KEY = 'cambalache_sesion';
 const TX_KEY = 'cambalache_transacciones';
 
 const COSTO_POR_CARTA_INTERCAMBIO = 500; // CLP, por persona, por CADA carta que esa persona pone en el intercambio
-const COMISION_VENTA = 0.2; // 20%
 const PUNTOS_INTERCAMBIO = 10;
-const PUNTOS_VENTA = 15;
 
 function escapeHtml(str) {
   return String(str).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -46,7 +41,7 @@ function isInCanasto(id) {
 function addToCanasto(card) {
   const list = getCanasto();
   if (!list.some((c) => c.id === card.id)) {
-    list.push({ id: card.id, juego: card.juego, nombre: card.nombre, imagen: card.imagen, tipo: 'intercambio', precio: 0 });
+    list.push({ id: card.id, juego: card.juego, nombre: card.nombre, imagen: card.imagen });
     saveCanasto(list);
   }
 }
@@ -55,113 +50,31 @@ function removeFromCanasto(id) {
   saveCanasto(getCanasto().filter((c) => c.id !== id));
 }
 
-function updateCanastoItem(id, cambios) {
-  const list = getCanasto();
-  const item = list.find((c) => c.id === id);
-  if (!item) return;
-  Object.assign(item, cambios);
-  saveCanasto(list);
-}
-
 function updateCanastoBadge() {
   const badge = document.getElementById('canastoBadge');
   if (badge) badge.textContent = getCanasto().length;
 }
 
-// ---- Cuentas (login/registro) ----
-// Cuentas guardadas en este navegador (localStorage), sin servidor propio: no es
-// autenticación real entre dispositivos distintos, pero las contraseñas nunca se guardan en
-// texto plano (se hashean con SHA-256 vía Web Crypto antes de guardarse).
+// ---- Puntos de intercambio ----
+// Los intercambios siguen simulados y locales, así que sus puntos también: se guardan en este
+// navegador por usuario (la cuenta en sí vive en Supabase, ver assets/js/auth.js).
 
-async function hashPassword(password) {
-  const datos = new TextEncoder().encode(password);
-  const buffer = await crypto.subtle.digest('SHA-256', datos);
-  return [...new Uint8Array(buffer)].map((b) => b.toString(16).padStart(2, '0')).join('');
+function clavePuntos(usuarioId) {
+  return 'cambalache_puntos_' + usuarioId;
 }
 
-function getUsuarios() {
-  try { return JSON.parse(localStorage.getItem(USERS_KEY)) || []; }
-  catch { return []; }
-}
-
-function saveUsuarios(list) {
-  localStorage.setItem(USERS_KEY, JSON.stringify(list));
-}
-
-function getSesionEmail() {
-  return localStorage.getItem(SESSION_KEY) || null;
-}
-
-function setSesionEmail(email) {
-  localStorage.setItem(SESSION_KEY, email);
-}
-
-function cerrarSesion() {
-  localStorage.removeItem(SESSION_KEY);
-}
-
-function getUsuarioActual() {
-  const email = getSesionEmail();
-  if (!email) return null;
-  return getUsuarios().find((u) => u.email === email) || null;
-}
-
-function estaLogueado() {
-  return !!getUsuarioActual();
-}
-
-async function registrarUsuario(nombre, email, password) {
-  const emailNorm = email.trim().toLowerCase();
-  const usuarios = getUsuarios();
-  if (usuarios.some((u) => u.email === emailNorm)) {
-    return { ok: false, error: 'Ya existe una cuenta con ese correo.' };
-  }
-  const passwordHash = await hashPassword(password);
-  usuarios.push({ email: emailNorm, nombre: nombre.trim(), passwordHash, puntos: 0, creado: new Date().toISOString() });
-  saveUsuarios(usuarios);
-  setSesionEmail(emailNorm);
-  return { ok: true };
-}
-
-async function iniciarSesion(email, password) {
-  const emailNorm = email.trim().toLowerCase();
-  const usuario = getUsuarios().find((u) => u.email === emailNorm);
-  if (!usuario) return { ok: false, error: 'No existe una cuenta con ese correo.' };
-  const passwordHash = await hashPassword(password);
-  if (usuario.passwordHash !== passwordHash) return { ok: false, error: 'Contraseña incorrecta.' };
-  setSesionEmail(emailNorm);
-  return { ok: true };
+function getPuntos() {
+  const usuario = getUsuarioActual();
+  if (!usuario) return 0;
+  return Number(localStorage.getItem(clavePuntos(usuario.id))) || 0;
 }
 
 function addPuntos(cantidad) {
-  const email = getSesionEmail();
-  if (!email) return 0;
-  const usuarios = getUsuarios();
-  const usuario = usuarios.find((u) => u.email === email);
-  if (!usuario) return 0;
-  usuario.puntos = (usuario.puntos || 0) + cantidad;
-  saveUsuarios(usuarios);
-  return usuario.puntos;
-}
-
-function renderNavAccount() {
-  const el = document.getElementById('navAccount');
-  if (!el) return;
   const usuario = getUsuarioActual();
-  if (usuario) {
-    el.innerHTML = `
-      <span class="nav-user"><i class="fas fa-circle-user"></i> ${escapeHtml(usuario.nombre)}</span>
-      <button class="nav-logout" id="navLogoutBtn" title="Cerrar sesión"><i class="fas fa-arrow-right-from-bracket"></i></button>
-    `;
-    document.getElementById('navLogoutBtn').addEventListener('click', () => {
-      cerrarSesion();
-      renderNavAccount();
-      if (typeof renderAll === 'function') renderAll();
-    });
-  } else {
-    el.innerHTML = '<button class="nav-login-btn" id="navLoginBtn"><i class="fas fa-right-to-bracket"></i> Iniciar sesión</button>';
-    document.getElementById('navLoginBtn').addEventListener('click', () => openAuthModal('login'));
-  }
+  if (!usuario) return 0;
+  const total = getPuntos() + cantidad;
+  localStorage.setItem(clavePuntos(usuario.id), String(total));
+  return total;
 }
 
 // ---- Transacciones simuladas ----
@@ -189,4 +102,61 @@ function updateTransaccion(id, cambios) {
   Object.assign(tx, cambios);
   saveTransacciones(list);
   return tx;
+}
+
+// ---- Mercado de subastas: formatos compartidos ----
+
+const CONSERVACION = {
+  nueva: 'Nueva',
+  casi_nueva: 'Casi nueva',
+  buena: 'Buena',
+  jugada: 'Jugada',
+  danada: 'Dañada',
+};
+
+const ESTADO_PUBLICACION = {
+  pendiente_envio: { label: 'Esperando que envíes la carta', clase: 'warn' },
+  en_subasta: { label: 'En subasta', clase: 'activo' },
+  adjudicada: { label: 'Adjudicada · esperando pago', clase: 'warn' },
+  vendida: { label: 'Vendida', clase: 'ok' },
+  por_devolver: { label: 'Por devolver', clase: 'warn' },
+  devuelta: { label: 'Devuelta', clase: '' },
+  cancelada: { label: 'Cancelada', clase: '' },
+};
+
+const ESTADO_VENTA = {
+  pendiente_pago: { label: 'Pendiente de pago', clase: 'warn' },
+  pagada: { label: 'Pagada · por despachar', clase: 'activo' },
+  despachada: { label: 'Despachada', clase: 'activo' },
+  liquidada: { label: 'Liquidada', clase: 'ok' },
+  impaga: { label: 'Impaga', clase: '' },
+};
+
+function estadoHtml(mapa, estado) {
+  const e = mapa[estado] || { label: estado, clase: '' };
+  return `<span class="estado ${e.clase}">${escapeHtml(e.label)}</span>`;
+}
+
+// "2d 4h", "3h 12m", "4m 09s" o "Cerrada".
+function tiempoRestante(fin) {
+  const ms = new Date(fin).getTime() - Date.now();
+  if (ms <= 0) return 'Cerrada';
+  const s = Math.floor(ms / 1000);
+  const d = Math.floor(s / 86400);
+  const h = Math.floor((s % 86400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  if (d > 0) return `${d}d ${h}h`;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m ${String(s % 60).padStart(2, '0')}s`;
+}
+
+function formatFecha(fecha) {
+  return new Date(fecha).toLocaleString('es-CL', { dateStyle: 'medium', timeStyle: 'short' });
+}
+
+// Link a publicar.html con la carta del catálogo ya elegida.
+function urlPublicar(card) {
+  const params = new URLSearchParams({ juego: card.juego, ref: card.id, nombre: card.nombre });
+  if (card.imagenGrande || card.imagen) params.set('imagen', card.imagenGrande || card.imagen);
+  return 'publicar.html?' + params;
 }

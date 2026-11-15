@@ -1,20 +1,13 @@
-// Lógica de canasto.html: cuenta (login/registro, ver assets/js/auth.js), items del canasto
-// (intercambiar o vender), y el flujo de transacciones paso a paso. El pago, la liberación de
-// fondos y la confirmación de "la otra parte" siguen siendo una simulación (ver "Acerca de");
-// por eso los botones que representan esos pasos lo dicen explícitamente, aunque el resto del
-// sitio ya no lo repita en un banner. Usa las funciones y constantes de assets/js/shared.js.
+// Lógica de canasto.html: cartas para intercambiar y el flujo de intercambio paso a paso. El
+// pago y la confirmación de "la otra parte" siguen siendo una simulación local (ver "Acerca
+// de"); por eso los botones de esos pasos lo dicen explícitamente. Las ventas ya no van por
+// aquí: cada carta tiene un link "Subastar" a publicar.html. La cuenta es la de Supabase
+// (assets/js/auth.js); el canasto, los intercambios y los puntos viven en este navegador.
 
 const ESTADOS_INTERCAMBIO_LABEL = {
   pendiente_pago: 'Pendiente de pago',
   esperando_contraparte: 'Pagado · esperando a la otra parte',
   resuelto: 'Resuelto · fondos liberados (demo)',
-};
-
-const ESTADOS_VENTA = {
-  publicada: { label: 'Publicada · esperando comprador', accion: 'simular_compra', boton: 'Simular: alguien compró y pagó' },
-  pagada_esperando_envio: { label: 'Pagada · confirmá el envío', accion: 'confirmar_envio', boton: 'Confirmé que envié la carta' },
-  esperando_confirmacion_comprador: { label: 'Enviada · esperando confirmación del comprador', accion: 'simular_confirmacion', boton: 'Simular: el comprador confirmó recepción' },
-  resuelto: { label: 'Resuelto · fondos liberados (demo)', accion: null, boton: null },
 };
 
 // ---- Render ----
@@ -33,7 +26,7 @@ function renderPerfilBar() {
   if (usuario) {
     el.innerHTML = `
       <div class="perfil-chip ok"><i class="fas fa-circle-check"></i> Sesión iniciada · ${escapeHtml(usuario.nombre)}</div>
-      <div class="perfil-puntos"><i class="fas fa-star"></i> ${usuario.puntos || 0} punto(s)</div>
+      <div class="perfil-puntos"><i class="fas fa-star"></i> ${getPuntos()} punto(s)</div>
     `;
   } else {
     el.innerHTML = `
@@ -46,26 +39,17 @@ function renderPerfilBar() {
 
 function itemRowHtml(item) {
   const meta = GAME_META[item.juego];
-  const comision = item.tipo === 'venta' && item.precio > 0 ? Math.round(item.precio * COMISION_VENTA) : 0;
   return `
     <div class="canasto-row" data-id="${escapeHtml(item.id)}">
       <div class="canasto-visual">${item.imagen ? `<img src="${escapeHtml(item.imagen)}" alt="" onerror="this.remove()">` : '<i class="fas fa-images"></i>'}</div>
       <div class="canasto-info">
         <strong>${escapeHtml(item.nombre)}</strong>
         <span class="chip-mini" style="background:${meta.color}">${meta.label}</span>
-        <div class="canasto-tipo-toggle">
-          <button class="tipo-btn ${item.tipo === 'intercambio' ? 'active' : ''}" data-accion="tipo" data-valor="intercambio">Intercambiar</button>
-          <button class="tipo-btn ${item.tipo === 'venta' ? 'active' : ''}" data-accion="tipo" data-valor="venta">Vender</button>
+        <div class="canasto-acciones">
+          <a class="btn-mini" href="${escapeHtml(urlPublicar(item))}"><i class="fas fa-gavel"></i> Subastar</a>
         </div>
-        ${item.tipo === 'venta' ? `
-          <div class="precio-row">
-            <input type="number" min="0" step="500" class="precio-input" data-accion="precio" value="${item.precio || ''}" placeholder="Precio CLP">
-            ${item.precio > 0 ? `<span class="precio-detalle">Comisión 20%: ${formatCLP(comision)} · Recibes: ${formatCLP(item.precio - comision)}</span>` : ''}
-            <button class="btn-mini primary" data-accion="publicar" ${item.precio > 0 ? '' : 'disabled'}><i class="fas fa-tag"></i> Publicar en venta</button>
-          </div>
-        ` : ''}
       </div>
-      <button class="canasto-remove" data-accion="quitar" title="Quitar del canasto"><i class="fas fa-trash"></i></button>
+      <button class="canasto-remove" data-accion="quitar" title="Quitar del canasto" aria-label="Quitar del canasto"><i class="fas fa-trash"></i></button>
     </div>
   `;
 }
@@ -79,7 +63,7 @@ function renderCanastoItems() {
 }
 
 function renderResumenIntercambio() {
-  const items = getCanasto().filter((c) => c.tipo === 'intercambio');
+  const items = getCanasto();
   const el = document.getElementById('resumenIntercambio');
   if (!items.length) { el.innerHTML = ''; return; }
   const costo = items.length * COSTO_POR_CARTA_INTERCAMBIO;
@@ -116,26 +100,12 @@ function txIntercambioHtml(tx) {
   `;
 }
 
-function txVentaHtml(tx) {
-  const est = ESTADOS_VENTA[tx.estado];
-  return `
-    <div class="tx-row" data-tx="${tx.id}">
-      <div class="tx-head">
-        <span class="chip-mini" style="background:var(--myl)">Venta</span>
-        <span class="tx-estado">${escapeHtml(est.label)}</span>
-      </div>
-      <div class="tx-items">${escapeHtml(tx.item.nombre)} · ${formatCLP(tx.item.precio)} (recibís ${formatCLP(tx.recibes)})</div>
-      ${est.boton ? `<button class="btn-mini primary" data-tx-accion="${est.accion}">${escapeHtml(est.boton)}</button>` : ''}
-    </div>
-  `;
-}
-
 function renderTransacciones() {
-  const list = getTransacciones();
+  const list = getTransacciones().filter((tx) => tx.tipo === 'intercambio');
   const el = document.getElementById('txList');
   el.innerHTML = list.length
-    ? list.map((tx) => (tx.tipo === 'intercambio' ? txIntercambioHtml(tx) : txVentaHtml(tx))).join('')
-    : '<p class="empty-note">Todavía no iniciaste ningún intercambio ni venta.</p>';
+    ? list.map(txIntercambioHtml).join('')
+    : '<p class="empty-note">Todavía no iniciaste ningún intercambio.</p>';
 }
 
 // ---- Acciones de canasto ----
@@ -152,7 +122,7 @@ function terminosAceptados() {
 function iniciarIntercambio() {
   if (!terminosAceptados()) return;
   if (!estaLogueado()) { openAuthModal('login'); return; }
-  const items = getCanasto().filter((c) => c.tipo === 'intercambio');
+  const items = getCanasto();
   if (!items.length) return;
   addTransaccion({
     id: 'tx-' + Date.now(),
@@ -162,26 +132,7 @@ function iniciarIntercambio() {
     estado: 'pendiente_pago',
     creada: new Date().toISOString(),
   });
-  saveCanasto(getCanasto().filter((c) => c.tipo !== 'intercambio'));
-  renderAll();
-}
-
-function publicarVenta(itemId) {
-  if (!terminosAceptados()) return;
-  if (!estaLogueado()) { openAuthModal('login'); return; }
-  const item = getCanasto().find((c) => c.id === itemId);
-  if (!item || !item.precio || item.precio <= 0) return;
-  const comision = Math.round(item.precio * COMISION_VENTA);
-  addTransaccion({
-    id: 'tx-' + Date.now(),
-    tipo: 'venta',
-    item: { id: item.id, juego: item.juego, nombre: item.nombre, imagen: item.imagen, precio: item.precio },
-    comision,
-    recibes: item.precio - comision,
-    estado: 'publicada',
-    creada: new Date().toISOString(),
-  });
-  removeFromCanasto(itemId);
+  saveCanasto([]);
   renderAll();
 }
 
@@ -197,20 +148,6 @@ function avanzarIntercambio(txId, accion) {
   renderAll();
 }
 
-function avanzarVenta(txId, accion) {
-  const tx = getTransacciones().find((t) => t.id === txId);
-  if (!tx) return;
-  if (accion === 'simular_compra' && tx.estado === 'publicada') {
-    updateTransaccion(txId, { estado: 'pagada_esperando_envio' });
-  } else if (accion === 'confirmar_envio' && tx.estado === 'pagada_esperando_envio') {
-    updateTransaccion(txId, { estado: 'esperando_confirmacion_comprador' });
-  } else if (accion === 'simular_confirmacion' && tx.estado === 'esperando_confirmacion_comprador') {
-    updateTransaccion(txId, { estado: 'resuelto', resuelta: new Date().toISOString() });
-    addPuntos(PUNTOS_VENTA);
-  }
-  renderAll();
-}
-
 // ---- Arranque ----
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -220,26 +157,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const row = e.target.closest('.canasto-row');
     if (!row) return;
     const id = row.dataset.id;
-    const tipoBtn = e.target.closest('[data-accion="tipo"]');
-    const quitarBtn = e.target.closest('[data-accion="quitar"]');
-    const publicarBtn = e.target.closest('[data-accion="publicar"]');
-    if (tipoBtn) {
-      updateCanastoItem(id, { tipo: tipoBtn.dataset.valor });
-      renderAll();
-    } else if (quitarBtn) {
+    if (e.target.closest('[data-accion="quitar"]')) {
       removeFromCanasto(id);
       renderAll();
-    } else if (publicarBtn) {
-      publicarVenta(id);
     }
-  });
-
-  document.getElementById('canastoList').addEventListener('change', (e) => {
-    const input = e.target.closest('[data-accion="precio"]');
-    if (!input) return;
-    const row = e.target.closest('.canasto-row');
-    updateCanastoItem(row.dataset.id, { precio: Math.max(0, Number(input.value) || 0) });
-    renderAll();
   });
 
   document.getElementById('txList').addEventListener('click', (e) => {
@@ -248,7 +169,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const row = e.target.closest('.tx-row');
     const tx = getTransacciones().find((t) => t.id === row.dataset.tx);
     if (!tx) return;
-    if (tx.tipo === 'intercambio') avanzarIntercambio(tx.id, btn.dataset.txAccion);
-    else avanzarVenta(tx.id, btn.dataset.txAccion);
+    avanzarIntercambio(tx.id, btn.dataset.txAccion);
   });
 });

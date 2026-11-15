@@ -1,7 +1,7 @@
 // Lógica de index.html: consulta en vivo las APIs de YGOPRODeck (Yu-Gi-Oh!) y Pokémon TCG
 // API, más el catálogo de ejemplo de Mitos y Leyendas (assets/js/myl-data.js). Ordena por ID,
-// permite agregar cartas al canasto (assets/js/shared.js), hacer zoom a la imagen y traducir
-// la descripción al español con la API pública de MyMemory.
+// permite agregar cartas al canasto (assets/js/shared.js) o llevarlas a publicar.html para
+// subastarlas, hacer zoom a la imagen y traducir la descripción al español con MyMemory.
 
 const TYPE_OPTIONS = {
   ygo: ['Effect Monster', 'Normal Monster', 'Fusion Monster', 'Synchro Monster', 'XYZ Monster', 'Link Monster', 'Ritual Monster', 'Spell Card', 'Trap Card'],
@@ -293,6 +293,7 @@ function openModal(card) {
   }
 
   refreshModalAddBtn();
+  document.getElementById('modalSubastarBtn').href = urlPublicar(card);
   document.getElementById('modalOverlay').classList.add('open');
 }
 

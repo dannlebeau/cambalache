@@ -1,6 +1,6 @@
 # PLAN — Mercado de subastas en consignación
 
-> Estado: **aprobado 2026-11-15**. En curso en la rama `feat/mercado-subastas` (parte de `chore/estandarizar-repo`). Siguiente paso: el primero sin marcar en "Estado".
+> Estado: **aprobado 2026-11-15**. En curso en la rama `feat/mercado-subastas` (parte de `chore/estandarizar-repo`). Siguiente paso: crear el proyecto Supabase, aplicar la migración, completar `assets/js/config.js` y verificar los pasos 2 a 4 de punta a punta.
 
 ## 1. Objetivo
 
@@ -59,10 +59,10 @@ Cambalache pasa a ser una casa de subastas en consignación: el vendedor manda s
 ## 4. Estado
 
 - [x] Paso 1 — 48 pruebas pgTAP pasan en un Postgres 15 desechable (esquema `auth` mínimo + subconjunto de pgTAP); una mutación de dos valores esperados hace fallar exactamente esas dos. En CI: `supabase db start` + `supabase test db`.
-- [ ] Paso 2
-- [ ] Paso 3
-- [ ] Paso 4
-- [ ] Paso 5
+- [ ] Paso 2 — código listo (`auth.js`); falta probarlo contra el proyecto Supabase real.
+- [ ] Paso 3 — código listo; sin Supabase, las 5 páginas cargan sin errores de JS y muestran "no está conectado". Falta la prueba con dos cuentas.
+- [ ] Paso 4 — código listo; falta el flujo completo contra Supabase.
+- [x] Paso 5 — textos, README y AGENTS actualizados; enlaces internos de README y de los HTML sin roturas. Capturas pendientes junto con la prueba real.
 - [ ] Paso 6
 
 ## 5. Notas / fallos

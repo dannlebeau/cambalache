@@ -44,7 +44,7 @@
         footer{border-top:1px solid var(--border);padding:2rem;text-align:center;color:var(--muted);font-size:.8rem}
         footer a{color:var(--muted);text-decoration:none;margin:0 .5rem}
         footer a:hover{color:var(--accent-light)}
-        .fee-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1.4rem}
+        .fee-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-top:1.4rem}
         .fee-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.3rem}
         .fee-card h3{font-size:.95rem;margin-bottom:.5rem;color:var(--accent-light)}
         .fee-card p{font-size:.85rem;margin:0}
@@ -66,7 +66,7 @@
     <h1>Tres juegos de cartas, tres fuentes de datos muy distintas</h1>
     <p>
         Cambalache junta en un solo lugar cartas de tres juegos coleccionables para que se
-        puedan explorar y usar como base para armar intercambios. Pero los tres juegos no
+        puedan explorar, subastar e intercambiar. Pero los tres juegos no
         están en la misma situación en cuanto a datos disponibles, y nos pareció más honesto
         explicarlo que esconderlo.
     </p>
@@ -104,74 +104,63 @@
         completar de verdad: el archivo a reemplazar es <code>assets/js/myl-data.js</code>.
     </p>
 
-    <h2>La visión: intercambios y ventas con plata de por medio</h2>
-    <p>
-        La idea de fondo de Cambalache es ser una plataforma donde dos personas acuerdan
-        intercambiar cartas, o donde alguien vende una carta a otra persona, con la plataforma
-        cobrando una parte y liberando los fondos recién cuando ambas partes confirman que todo
-        salió bien. Eso es un negocio real: retener plata de terceros hasta liberarla implica
-        cosas serias (posiblemente regulación de la CMF, constituir una empresa, un proveedor
-        de pagos que soporte ese modelo) que no se resuelven escribiendo código.
-    </p>
+    <h2>Cómo funciona el mercado: subastas en consignación</h2>
+        <p>
+            Cambalache vende cartas en consignación: quien vende nos envía la carta, la revisamos
+            y queda en nuestra custodia; recién entonces sale a una subasta de 3 días. Como la
+            carta ya está con nosotros, quien compra sabe que existe y que coincide con lo
+            publicado, y nadie tiene que mandarle una carta a un desconocido.
+        </p>
 
-    <div class="fee-grid">
-        <div class="fee-card">
-            <h3><i class="fas fa-people-arrows"></i> Intercambio</h3>
-            <p>Cada persona paga $500 CLP por <strong>cada carta</strong> que pone en ese
-               intercambio (si ofrecés 3 cartas, tu parte son $1.500 CLP). Cuando ambas partes
-               marcan el intercambio como resuelto, esa plata quedaría liberada para la
-               plataforma.</p>
+        <div class="fee-grid">
+            <div class="fee-card">
+                <h3><i class="fas fa-gavel"></i> Subasta</h3>
+                <p>Gana la puja más alta al cerrar los 3 días. Quien vende recibe el
+                   <strong>90%</strong> del monto final y Cambalache el <strong>10%</strong>.
+                   Si nadie puja, la carta vuelve a subasta con un 10% de descuento.</p>
+            </div>
+            <div class="fee-card">
+                <h3><i class="fas fa-bolt"></i> Compra inmediata</h3>
+                <p>¿No quieres esperar? Cómprala ya pagando la puja actual (o el precio base)
+                   más un 20% por asegurarla. La subasta se cierra al instante.</p>
+            </div>
+            <div class="fee-card">
+                <h3><i class="fas fa-people-arrows"></i> Intercambio</h3>
+                <p>Aparte del mercado sigue el intercambio carta por carta: $500 CLP por cada
+                   carta que pones. Esta parte todavía es una simulación local.</p>
+            </div>
         </div>
-        <div class="fee-card">
-            <h3><i class="fas fa-tag"></i> Venta</h3>
-            <p>El comprador paga el precio completo por adelantado. Cuando el vendedor confirma
-               el envío y el comprador confirma que la recibió, se liberaría el 80% para quien
-               vende (el 20% restante es la comisión de la plataforma).</p>
+
+        <p>
+            Las condiciones completas (tarifas, plazos, qué pasa si el ganador no paga) están en
+            los <a href="terminos.html">Términos y Condiciones</a>.
+        </p>
+
+        <h2>Qué es real y qué es simulado</h2>
+        <p>
+            Las cuentas, las publicaciones, las pujas en vivo, los cierres automáticos y el panel
+            de administración son reales: funcionan con una base de datos compartida, y lo que
+            pujas lo ven todas las personas al instante. Lo que todavía es simulado es el
+            <strong>pago</strong>: el botón "Pagar" marca la compra como pagada sin cobrar nada.
+            Los pagos reales se habilitarán cuando exista Cambalache SpA y los términos estén
+            revisados legalmente.
+        </p>
+        <p>
+            Las cuentas usan correo y contraseña (la contraseña la maneja el proveedor de
+            autenticación; Cambalache nunca la ve). Confirman el correo, pero no verifican
+            identidad.
+        </p>
+
+        <div class="note-box">
+            <strong>Importante:</strong> mientras los pagos sean simulados, no envíes una carta
+            esperando recibir dinero por ella. El flujo completo funciona para probarlo y
+            mostrarlo, pero todavía no mueve plata real.
         </div>
-    </div>
 
-    <p>
-        Las condiciones completas (tarifas, verificación, responsabilidades de cada parte,
-        qué pasa si algo sale mal) están en los
-        <a href="terminos.html">Términos y Condiciones</a>. En <a href="canasto.html">Mi
-        canasto</a> hay que leerlos y aceptarlos antes de poder iniciar cualquier intercambio
-        o venta.
-    </p>
-
-    <p style="margin-top:1.4rem">
-        Podés crear una cuenta, armar tu canasto, marcar cartas para intercambiar o vender, y
-        avanzar cada transacción paso a paso en <a href="canasto.html">Mi canasto</a>. Pero cada
-        pago sigue siendo simulado, y como todavía no hay una segunda persona real conectada del
-        otro lado, los pasos de "la otra parte" se simulan con un botón que dice explícitamente
-        "Simular…" — esa etiqueta se dejó a propósito, justo en el paso donde alguien podría
-        confiar en una confirmación que en realidad no viene de nadie más. También hay un
-        sistema de puntos por cada intercambio o venta resuelta.
-    </p>
-
-    <h2>Cuenta (crear cuenta / iniciar sesión)</h2>
-    <p>
-        Antes de iniciar un intercambio o una venta hay que tener una cuenta: el botón de arriba
-        a la derecha permite crearla (nombre, correo, contraseña) o iniciar sesión. La
-        contraseña nunca se guarda en texto plano (se hashea con SHA-256 antes de guardarse),
-        pero la cuenta vive solo en el navegador donde se creó, así que no es una autenticación
-        real entre dispositivos ni verifica que la persona sea quien dice ser. Pensamos en usar
-        <a href="https://claveunica.gob.cl" target="_blank" rel="noopener">Clave Única</a> para
-        una verificación de identidad real más adelante, pero esa integración requiere un
-        convenio formal con el Estado: no es algo que se pueda simplemente agregar en el código
-        de un proyecto personal.
-    </p>
-
-    <div class="note-box">
-        <strong>Importante:</strong> ningún pago mueve plata real todavía, ninguna cuenta
-        verifica identidad de verdad, y ninguna transacción conecta con una segunda persona
-        real. Es la maqueta completa del flujo que se quiere construir, para poder mostrarlo y
-        decidir los siguientes pasos (empresa, proveedor de pagos, verificación de identidad
-        real) antes de lanzarlo de verdad.
-    </div>
 
     <h2>Aviso legal</h2>
     <p>
-        Cambalache es un proyecto de fans, sin fines de lucro y sin afiliación con Konami
+        Cambalache es un proyecto independiente, sin afiliación con Konami
         (Yu-Gi-Oh!), The Pokémon Company, Nintendo, Game Freak (Pokémon), ni Onirica
         Studios/Toro Studios (Mitos y Leyendas). Todos los nombres, imágenes y textos de las
         cartas son propiedad de sus respectivos dueños.

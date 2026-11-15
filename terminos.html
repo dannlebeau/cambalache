@@ -44,7 +44,9 @@
         footer a{color:var(--muted);text-decoration:none;margin:0 .5rem}
         footer a:hover{color:var(--accent-light)}
         @media(max-width:600px){.fee-table{display:block;overflow-x:auto}}
-    </style>
+        main ol{padding-left:1.3rem;margin-bottom:1.2rem}
+    main ol li{margin-bottom:.5rem}
+</style>
 </head>
 <body>
 
@@ -58,98 +60,108 @@
 
 <main>
     <h1>Términos y Condiciones</h1>
-    <p class="updated">Borrador de referencia · julio de 2026</p>
+    <p class="updated">Borrador de referencia · noviembre de 2026</p>
 
     <div class="draft-note">
-        <strong>Estado actual: esto describe el modelo, no un servicio ya operativo.</strong>
-        Cambalache SpA está en proceso de constitución; hasta que esté formalmente creada, con
-        sus propios términos revisados legalmente y un medio de pago real habilitado, nada de
-        lo descrito abajo cobra ni retiene dinero de verdad. En <a href="canasto.html">Mi
-        canasto</a> el flujo completo es una simulación, para que las condiciones queden claras
-        desde ahora y no se tengan que inventar después de que la plataforma ya esté cobrando.
+        <strong>Estado actual: el mercado funciona, pero los pagos todavía son de prueba.</strong>
+        Las cuentas, las publicaciones, las pujas y las subastas son reales dentro del sitio,
+        pero el pago es una simulación: no se cobra ni se transfiere dinero de verdad.
+        Cambalache SpA está en proceso de constitución; antes de habilitar pagos reales,
+        estos términos serán revisados legalmente.
     </div>
 
     <h2>1. Quiénes son las partes</h2>
     <p>
         Estos términos son entre <strong>Cambalache</strong> (operado hoy como proyecto
         independiente; en proceso de constitución como <strong>Cambalache SpA</strong>) y cada
-        persona que use la plataforma para intercambiar o vender cartas coleccionables
-        ("usuario" o "usuaria").
+        persona que use la plataforma para vender, comprar o intercambiar cartas
+        coleccionables ("usuario" o "usuaria").
     </p>
 
-    <h2>2. Qué hace la plataforma</h2>
-    <p>
-        Cambalache intermedia entre personas que quieren intercambiar cartas entre sí, o entre
-        quien vende una carta y quien la compra. La plataforma no es dueña de las cartas, no
-        certifica su autenticidad ni su estado de conservación: eso es responsabilidad de quien
-        las ofrece.
-    </p>
+    <h2>2. Cómo funciona el mercado (consignación)</h2>
+    <ol>
+        <li><strong>Publicación:</strong> quien vende publica la carta con su estado, un precio
+            base y, si quiere, un precio mínimo.</li>
+        <li><strong>Envío y custodia:</strong> quien vende envía la carta física a Cambalache.
+            Cambalache la revisa; si coincide con lo declarado, la aprueba y queda en su
+            custodia. Si no coincide, la rechaza y la devuelve.</li>
+        <li><strong>Subasta:</strong> la carta se subasta durante 3 días. Gana la puja más alta
+            al cierre. Si alguien puja en los últimos minutos, el cierre se alarga unos
+            minutos más.</li>
+        <li><strong>Compra inmediata:</strong> mientras la subasta está abierta, cualquiera puede
+            comprar la carta de inmediato pagando la puja actual (o el precio base, si no hay
+            pujas) más un recargo del 20%. Eso cierra la subasta.</li>
+        <li><strong>Sin pujas:</strong> si la subasta cierra sin pujas, la carta se vuelve a
+            publicar con un 10% de descuento. Si el nuevo precio queda bajo el precio mínimo
+            de quien vende, la subasta no se repite y la carta se devuelve.</li>
+        <li><strong>Pago y despacho:</strong> quien gana tiene 48 horas para pagar. Con el pago,
+            Cambalache despacha la carta y luego transfiere a quien vendió su parte.</li>
+    </ol>
 
     <h2>3. Tarifas</h2>
     <table class="fee-table">
-        <thead><tr><th>Operación</th><th>Costo</th><th>Cuándo se cobra</th></tr></thead>
+        <thead><tr><th>Concepto</th><th>Monto</th><th>Quién lo paga</th></tr></thead>
         <tbody>
             <tr>
-                <td>Intercambio</td>
-                <td><strong>$500 CLP por cada carta</strong> que esa persona pone en el
-                    intercambio (si ofrecés 3 cartas, tu parte son $1.500 CLP; cada persona
-                    paga según las cartas que ella ofrezca, no las de la otra parte).</td>
-                <td>Prepago de ambas partes al iniciar; se libera para la plataforma cuando
-                    ambas confirman que el intercambio se completó.</td>
+                <td>Comisión de venta</td>
+                <td><strong>10% del monto final pagado</strong> (puja ganadora o precio de compra
+                    inmediata). Quien vende recibe el <strong>90%</strong>.</td>
+                <td>Se descuenta del pago a quien vende.</td>
             </tr>
             <tr>
-                <td>Venta</td>
-                <td><strong>20% de comisión</strong> sobre el precio publicado. Quien vende
-                    recibe el 80% restante.</td>
-                <td>El comprador paga el precio completo por adelantado; los fondos se liberan
-                    (80% para quien vende) cuando el vendedor confirma el envío y el comprador
-                    confirma la recepción.</td>
+                <td>Recargo de compra inmediata</td>
+                <td><strong>20%</strong> sobre la puja actual o el precio base. Forma parte del
+                    monto final, así que también se reparte 90/10.</td>
+                <td>Quien compra de inmediato.</td>
+            </tr>
+            <tr>
+                <td>Intercambio carta por carta</td>
+                <td><strong>$500 CLP por cada carta</strong> que cada persona pone en el
+                    intercambio (sección aparte, todavía simulada).</td>
+                <td>Cada persona, por sus propias cartas.</td>
             </tr>
         </tbody>
     </table>
     <p>
-        Estas tarifas pueden cambiar en el futuro. Si cambian, se va a avisar con anticipación
-        antes de que se apliquen a una operación nueva; las operaciones ya iniciadas mantienen
-        la tarifa que tenían al momento de iniciarse.
+        Publicar una carta no tiene costo. Los costos de envío hacia y desde Cambalache se
+        informarán antes de habilitar los pagos reales. Si las tarifas cambian, se avisará con
+        anticipación; una subasta ya iniciada mantiene las reglas con que se publicó la venta.
     </p>
 
     <h2>4. Cuenta de usuario</h2>
     <p>
-        Para iniciar cualquier intercambio o venta hay que crear una cuenta (nombre, correo,
-        contraseña) o iniciar sesión. Hoy esa cuenta <strong>no verifica identidad</strong>: solo
-        confirma que quien vuelve a entrar tiene la misma contraseña que registró, guardada de
-        forma segura (hasheada, nunca en texto plano) en este navegador. Cuando la plataforma
-        maneje dinero real, esta sección se va a actualizar para describir una verificación de
-        identidad real (evaluando alternativas como Clave Única, que requiere convenio
-        institucional con el Estado, u otro mecanismo equivalente).
+        Para publicar, pujar o comprar hay que crear una cuenta con nombre, correo y contraseña.
+        La cuenta confirma el correo, pero <strong>no verifica identidad</strong>. Cuando la
+        plataforma maneje dinero real, esta sección describirá una verificación de identidad.
     </p>
 
-    <h2>5. Responsabilidades del usuario</h2>
+    <h2>5. Compromisos de cada parte</h2>
     <ul>
-        <li>Describir honestamente el estado de las cartas que ofrece (edición, condición,
-            si son originales).</li>
-        <li>En un intercambio o venta, despachar lo acordado dentro de un plazo razonable una
-            vez confirmado el pago.</li>
-        <li>Confirmar la recepción solo cuando efectivamente se recibió lo acordado.</li>
-        <li>No usar la plataforma para operaciones fraudulentas ni para bienes distintos a
-            cartas coleccionables.</li>
+        <li><strong>Quien vende:</strong> describir honestamente la carta (edición, idioma,
+            estado, si es original) y enviarla protegida con el código de publicación.</li>
+        <li><strong>Quien puja:</strong> cada puja es un compromiso de compra. Si ganas y no
+            pagas dentro del plazo, la carta pasa al siguiente mejor postor y tu cuenta queda
+            bloqueada.</li>
+        <li><strong>Cambalache:</strong> custodiar la carta con cuidado desde que la recibe,
+            despacharla a quien la compró una vez pagada, transferir el 90% a quien vendió, y
+            devolver las cartas rechazadas o no vendidas.</li>
+        <li>Nadie puede usar la plataforma para operaciones fraudulentas ni para bienes
+            distintos a cartas coleccionables.</li>
     </ul>
 
     <h2>6. Cancelaciones y disputas</h2>
     <p>
-        Si una de las partes no confirma un intercambio o una venta dentro de un plazo
-        razonable, o hay desacuerdo sobre lo recibido, hoy no existe un proceso formal de
-        mediación ni de reembolso: es algo que se tiene que definir antes de operar con dinero
-        real, junto con el proveedor de pagos y, si corresponde, asesoría legal. Esta sección se
-        va a completar con ese proceso antes del lanzamiento real.
+        Quien vende puede cancelar una publicación mientras no haya enviado la carta. Una vez
+        en subasta, la publicación sigue hasta su cierre. El proceso formal de reclamos,
+        reembolsos y pérdida o daño de una carta en custodia o en tránsito se definirá antes de
+        habilitar pagos reales, junto con el proveedor de pagos y asesoría legal.
     </p>
 
     <h2>7. Modificaciones a estos términos</h2>
     <p>
         Estos términos pueden actualizarse a medida que el proyecto avance (por ejemplo, al
-        constituirse formalmente Cambalache SpA, al integrar un medio de pago real, o al definir
-        el proceso de disputas). La fecha de "Borrador de referencia" arriba indica la última
-        actualización.
+        constituirse formalmente Cambalache SpA o al integrar un medio de pago real). La fecha
+        de "Borrador de referencia" arriba indica la última actualización.
     </p>
 
     <h2>8. Contacto</h2>

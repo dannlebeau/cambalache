@@ -8,34 +8,48 @@ Las reglas que valen para todos los repos viven en el repo **`dotfiles`** (`dotf
 
 ## Qué es
 
-Explorador de cartas TCG (Yu-Gi-Oh!, Pokémon, Mitos y Leyendas) con cuenta y canasto de intercambio o venta. Regla de arquitectura: es un sitio **100% estático**, sin backend; todo el estado vive en `localStorage` y los catálogos se consultan directo desde el navegador a APIs públicas. El pago, la confirmación de la otra parte y la liberación de fondos son **simulados** y deben seguir diciéndolo en la UI (botones "Simular…", `acerca-de.html`, `terminos.html`).
+Mercado de cartas TCG (Yu-Gi-Oh!, Pokémon, Mitos y Leyendas) con subastas en consignación de 3 días (10% Cambalache, 90% vendedor) e intercambios carta por carta aparte.
+
+Reglas de arquitectura:
+
+- Frontend estático (HTML + JS vanilla, sin build) y backend en **Supabase** (Auth, Postgres, Realtime, `pg_cron`).
+- **Toda regla de negocio vive en Postgres** (`supabase/migrations`): funciones `security definer` con `set search_path = ''` y nombres calificados, más RLS de solo lectura. El navegador nunca escribe tablas directo, solo llama funciones (RPC). Una regla nueva va en una migración nueva con su prueba pgTAP, no en JS.
+- El **pago es simulado** (`simular_pago`) y la UI debe decirlo donde se paga ("Pagar (simulado)", avisos "Pagos en modo prueba", `terminos.html`, `acerca-de.html`).
+- El canasto, los intercambios y sus puntos siguen en `localStorage`, simulados.
 
 ## Estructura
 
 | Carpeta / archivo | Contenido |
 |---|---|
-| `*.html` | Las 5 páginas, con su CSS inline |
-| `assets/js/` | JS vanilla: `shared.js` (estado en `localStorage`), `auth.js`, `app.js`, `canasto.js`, `myl-data.js`, `tema.js` |
+| `*.html` | Páginas. Las originales (`index`, `canasto`, textos) tienen CSS inline; las del mercado usan `assets/css/base.css` |
+| `assets/js/` | `auth.js` (cliente Supabase y cuentas), `mercado.js` (ayudas del mercado), `shared.js` (formatos, canasto), `config.js` (URL y publishable key) y un archivo por página |
+| `assets/css/` | `tema.css` (tokens claro/oscuro), `base.css` (páginas del mercado) |
+| `supabase/migrations/` | Esquema, funciones, RLS, Realtime y `pg_cron` |
+| `supabase/tests/` | Pruebas pgTAP |
 | `dev-server.js` | Servidor estático local (Node, sin dependencias) |
 
 ## Comandos
 
 ```sh
 node dev-server.js   # http://localhost:3000
+supabase db start    # Postgres local con migraciones (Docker)
+supabase test db     # pruebas pgTAP
 ```
-
-No hay dependencias que instalar ni pruebas automatizadas.
 
 ## Convenciones de código
 
-- JS vanilla en scripts clásicos (`<script src>`), sin módulos ni build.
-- Todo dato que venga de una API o del usuario se escribe con `escapeHtml` o `textContent`, nunca directo en `innerHTML`.
+- JS vanilla en scripts clásicos (`<script src>`), sin módulos ni build. `supabase-js` viene de jsDelivr con versión exacta y SRI.
+- Todo dato que venga de una API, de la base o del usuario se escribe con `escapeHtml` o `textContent`, nunca directo en `innerHTML`.
+- Los errores de las funciones de la base se escriben en español con `raise exception`; la UI los muestra tal cual vía `mensajeError` (`auth.js`).
+- Botones que envían algo usan `conBoton` (`mercado.js`) para evitar el doble envío.
 - No introducir frameworks, bundlers, TypeScript ni dependencias de npm sin pedirlo.
-- Colores como tokens CSS en `:root`, con su versión oscura (ver selector de tema en `dotfiles/AGENTS.md` → Webs).
+- Colores como tokens CSS en `assets/css/tema.css`, con su versión oscura (ver selector de tema en `dotfiles/AGENTS.md` → Webs).
 
 ## Datos sensibles a cambios
 
-- Las tarifas ($500 CLP por carta en intercambio, 20% en venta) se definen en `assets/js/shared.js` (`COSTO_POR_CARTA_INTERCAMBIO`, `COMISION_VENTA`) y se repiten en textos de `terminos.html`, `acerca-de.html`, `assets/js/canasto.js` y `README.md`: si cambian, cambiarlas en todos a la vez.
+- Las reglas de la subasta (10% comisión, 20% recargo, −10% al republicar, 72 h, 48 h de pago, incrementos, anti-sniping) son los valores por defecto de `configuracion` en la migración y se editan en Admin → Reglas. Los textos de `terminos.html`, `acerca-de.html` y `README.md` los repiten: si cambian los valores por defecto, actualizar esos textos en el mismo cambio.
+- La tarifa de intercambio ($500 CLP por carta) está en `assets/js/shared.js` (`COSTO_POR_CARTA_INTERCAMBIO`) y en los mismos textos.
+- Nunca poner la `service_role` key ni otro secreto en `assets/js/config.js` ni en el repo.
 - `assets/js/myl-data.js` es un catálogo de ejemplo sin texto copiado de cartas reales; no agregar contenido con derechos.
 
 ## Flujo de trabajo

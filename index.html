@@ -51,7 +51,10 @@
         .auth-tabs{display:flex;gap:.4rem;background:var(--bg3);border-radius:999px;padding:.25rem;margin-bottom:1.4rem}
         .auth-tab{flex:1;background:none;border:none;color:var(--muted);padding:.6rem;border-radius:999px;font-size:.82rem;cursor:pointer}
         .auth-tab.active{background:var(--accent);color:#fff}
-        #loginForm,#registroForm{display:flex;flex-direction:column}
+        #loginForm,#registroForm,#passForm{display:flex;flex-direction:column}
+        .verify-box h3{margin-bottom:.4rem}
+        .verify-box > p{color:var(--muted);font-size:.85rem;margin-bottom:1.2rem}
+        .verify-ok{color:var(--ok);font-size:.82rem;margin-bottom:.5rem}
         .verify-box label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:.35rem}
         .verify-box input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:.7rem .9rem;color:var(--text);font-size:.88rem;margin-bottom:1rem}
         .verify-box input:focus{outline:none;border-color:var(--accent)}
@@ -148,6 +151,7 @@
 <nav>
     <a href="index.html" class="nav-logo"><i class="fas fa-shuffle"></i> Cambalache</a>
     <ul class="nav-links">
+        <li><a href="subastas.html">Subastas</a></li>
         <li><a href="acerca-de.html">Acerca de</a></li>
         <li>
             <a href="canasto.html" class="trade-toggle" id="canastoLink">
@@ -163,7 +167,7 @@
     <span class="eyebrow mono">Yu-Gi-Oh! · Pokémon · Mitos y Leyendas</span>
     <h1>Cartas para ver, cartas para <em>cambiar</em></h1>
     <p>Busca entre miles de cartas reales de tres juegos distintos, ordenadas por ID, y arma tu
-       canasto para intercambiar o vender con otras personas de la comunidad.</p>
+       canasto para intercambiar o súbelas a una subasta.</p>
 </section>
 
 <div class="tabs-wrap">
@@ -202,6 +206,7 @@
             <p class="modal-desc" id="modalDesc"></p>
             <div class="modal-actions">
                 <button class="btn-mini primary" id="modalAddBtn"><i class="fas fa-basket-shopping"></i> Agregar al canasto</button>
+                <a class="btn-mini" id="modalSubastarBtn" href="publicar.html"><i class="fas fa-gavel"></i> Subastar esta carta</a>
                 <button class="btn-mini" id="translateBtn" style="display:none"><i class="fas fa-language"></i> Traducir al español</button>
             </div>
         </div>
@@ -212,38 +217,6 @@
     <img id="zoomImg" alt="">
 </div>
 
-<div class="modal-overlay" id="authOverlay">
-    <div class="verify-box">
-        <button class="verify-close" id="authClose"><i class="fas fa-xmark"></i></button>
-        <div class="auth-tabs">
-            <button class="auth-tab active" data-tab="login" type="button">Iniciar sesión</button>
-            <button class="auth-tab" data-tab="registro" type="button">Crear cuenta</button>
-        </div>
-
-        <form id="loginForm">
-            <label for="loginEmail">Correo</label>
-            <input type="email" id="loginEmail" required>
-            <label for="loginPassword">Contraseña</label>
-            <input type="password" id="loginPassword" required>
-            <p class="verify-error" id="loginError"></p>
-            <button type="submit" class="btn-mini primary"><i class="fas fa-right-to-bracket"></i> Iniciar sesión</button>
-        </form>
-
-        <form id="registroForm" style="display:none">
-            <label for="registroNombre">Nombre</label>
-            <input type="text" id="registroNombre" required>
-            <label for="registroEmail">Correo</label>
-            <input type="email" id="registroEmail" required>
-            <label for="registroPassword">Contraseña</label>
-            <input type="password" id="registroPassword" required minlength="6">
-            <label for="registroPassword2">Repetir contraseña</label>
-            <input type="password" id="registroPassword2" required minlength="6">
-            <p class="verify-error" id="registroError"></p>
-            <button type="submit" class="btn-mini primary"><i class="fas fa-user-plus"></i> Crear cuenta</button>
-        </form>
-    </div>
-</div>
-
 <footer>
     <p class="footer-disclaimer">
         Cambalache es un proyecto de fans, sin afiliación con Konami (Yu-Gi-Oh!), The Pokémon
@@ -252,9 +225,11 @@
         datos de Yu-Gi-Oh! y Pokémon se obtienen en vivo de sus APIs públicas para fans
         (YGOPRODeck y Pokémon TCG API).
     </p>
-    <a href="acerca-de.html">Acerca de</a> · <a href="canasto.html">Mi canasto</a> · <a href="terminos.html">Términos y Condiciones</a> · <a href="privacidad.html">Política de Privacidad</a>
+    <a href="subastas.html">Subastas</a> · <a href="acerca-de.html">Acerca de</a> · <a href="canasto.html">Mi canasto</a> · <a href="terminos.html">Términos y Condiciones</a> · <a href="privacidad.html">Política de Privacidad</a>
 </footer>
 
+<script src="assets/js/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js" integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK" crossorigin="anonymous"></script>
 <script src="assets/js/shared.js"></script>
 <script src="assets/js/auth.js"></script>
 <script src="assets/js/myl-data.js"></script>
