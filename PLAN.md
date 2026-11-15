@@ -1,6 +1,6 @@
 # PLAN — Frontend en Nuxt y, después, backend propio (pagos reales, correos y fotos)
 
-> Estado: **decisiones técnicas tomadas (2026-11-15). Foco actual: solo el frontend (paso 1). El backend (pasos 2 a 6) queda planificado pero no se empieza hasta cerrar el paso 1.** Quedan pendientes los temas legales/tributarios antes de cobrar de verdad. Reemplaza al plan del mercado de subastas (ya mezclado en `main`, ver `CHANGELOG.md` 0.2.0).
+> Estado: **decisiones técnicas tomadas (2026-11-15). Foco actual: solo el frontend (paso 1). Avance: 1a hecho (rama `feat/nuxt-esqueleto`); siguiente, 1b (el módulo `@nuxtjs/supabase` se agrega ahí, porque sin un proyecto Supabase configurado responde 500 en todas las páginas). El backend (pasos 2 a 6) queda planificado pero no se empieza hasta cerrar el paso 1.** Quedan pendientes los temas legales/tributarios antes de cobrar de verdad. Reemplaza al plan del mercado de subastas (ya mezclado en `main`, ver `CHANGELOG.md` 0.2.0).
 
 ## 1. Objetivo
 

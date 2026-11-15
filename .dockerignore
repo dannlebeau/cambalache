@@ -1,0 +1,8 @@
+# Solo entra lo necesario para construir web/.
+**/node_modules
+**/.nuxt
+**/.output
+.git
+.env
+.env.*
+!.env.example

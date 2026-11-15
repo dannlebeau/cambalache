@@ -4,6 +4,29 @@ Todos los cambios relevantes de este proyecto se documentan en este archivo.
 
 El formato sigue [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) y el proyecto usa [Versionado Semántico](https://semver.org/lang/es/).
 
+## [0.3.0] - 2026-11-15
+
+### Added
+
+- App Nuxt 4 (Vue 3 + TypeScript estricto) en `web/`, como npm workspace, con página de inicio provisoria y selector de tema Sistema / Claro / Oscuro que se aplica en `<head>` antes de pintar (sin parpadeo con SSR). Convive con el sitio actual, que sigue en la raíz.
+- ESLint (`@nuxt/eslint`), chequeo de tipos (`vue-tsc`) y pruebas con Vitest.
+- `Dockerfile` (node:24-alpine fijado por digest, usuario sin privilegios), `compose.yaml` para probar en local en `http://localhost:3001` y `.env.example`.
+- Jobs `web` (lint, tipos, pruebas y build con `npm ci`) e `imagen` (build de Docker) en el workflow `CI`.
+- Dependabot para npm y para la imagen base de Docker.
+
+### Changed
+
+- `package.json` usa npm workspaces y `allowScripts` (se niega el `postinstall` de esbuild, que no hace falta).
+- `AGENTS.md`, `README.md` y `PLAN.md` describen la app nueva, sus comandos y el avance del paso 1.
+
+### Fixed
+
+- Enlace de la versión 0.2.2 al pie de este archivo.
+
+### Security
+
+- Nuxt 4.6.4, que corrige GHSA-r99w-jh2x-3mg9 y GHSA-mjrq-cffv-q4qc. Quedan avisos bajos y moderados en dependencias transitivas de herramientas de build y desarrollo (glob, minimatch, deepmerge) sin versión corregida compatible; ninguna queda en `.output` (lo que corre en producción).
+
 ## [0.2.2] - 2026-11-15
 
 ### Added
@@ -61,7 +84,8 @@ El formato sigue [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) 
 - Font Awesome desde cdnjs con SRI (`integrity` + `crossorigin`).
 - `dev-server.js` solo sirve archivos dentro de la carpeta del proyecto y responde 400 a rutas mal codificadas.
 
-[0.2.2]: https://github.com/dannlebeau/cambalache/compare/v0.2.0...v0.2.2
+[0.3.0]: https://github.com/dannlebeau/cambalache/compare/v0.2.2...v0.3.0
+[0.2.2]: https://github.com/dannlebeau/cambalache/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/dannlebeau/cambalache/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/dannlebeau/cambalache/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/dannlebeau/cambalache/releases/tag/v0.1.0

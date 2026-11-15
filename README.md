@@ -23,7 +23,8 @@ Quien vende envía su carta, Cambalache la revisa y la custodia, y se subasta 3 
 
 ### Dependencias
 
-- Node.js 24+ (solo para el servidor local y las herramientas de desarrollo; el sitio no tiene build)
+- Node.js 24+ (servidor local del sitio actual y app Nuxt nueva en `web/`)
+- Docker con `compose`, para probar la app Nuxt como en producción
 - Un proyecto de [Supabase](https://supabase.com) para cuentas y subastas (el plan gratis alcanza)
 - Opcional: [Supabase CLI](https://supabase.com/docs/guides/cli) y Docker, para correr las pruebas de la base en local
 
@@ -47,6 +48,18 @@ npm run dev
 ```
 
 Abre `http://localhost:3000` (el puerto se cambia con la variable `PORT`). También funciona con cualquier otro servidor estático (`npx serve .`); lo único que no anda bien es abrir los `.html` directo como `file://`.
+
+### App nueva (Nuxt, en construcción)
+
+El frontend se está migrando a Nuxt en `web/` (ver [`PLAN.md`](PLAN.md)). Mientras tanto convive con el sitio actual:
+
+```sh
+npm ci                       # dependencias con el lockfile
+npm run web:dev              # desarrollo en http://localhost:3001
+docker compose up --build    # como en producción, en http://localhost:3001
+```
+
+Para la configuración, copia `.env.example` a `.env` (todavía no la usa ninguna página).
 
 Cada página tiene en el nav un selector de tema que rota Sistema → Claro → Oscuro y recuerda la elección en el navegador.
 
@@ -119,7 +132,11 @@ supabase db start   # Postgres local con las migraciones aplicadas (requiere Doc
 supabase test db    # pruebas pgTAP de supabase/tests
 ```
 
-El workflow `CI` corre estos dos comandos en cada PR.
+```sh
+npm run web:lint && npm run web:typecheck && npm run web:test   # app Nuxt
+```
+
+El workflow `CI` corre todo esto en cada PR, además del build de la app y de la imagen Docker.
 
 ## De dónde salen los datos
 

@@ -1,6 +1,26 @@
-# Mantiene al día los SHA de las Actions. Cada actualización llega como PR para revisión humana.
+# Mantiene al día los SHA de las Actions, las dependencias de npm y la imagen base de Docker. Cada actualización llega como PR para revisión humana.
 version: 2
 updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+    groups:
+      npm:
+        patterns:
+          - "*"
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
   - package-ecosystem: github-actions
     directory: /
     schedule:
