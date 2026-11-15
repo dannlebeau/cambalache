@@ -3,7 +3,7 @@
 # tiempo de ejecución por NUXT_PUBLIC_SUPABASE_URL y NUXT_PUBLIC_SUPABASE_KEY.
 
 # node:24-alpine fijado por digest; Dependabot lo mantiene al día.
-FROM node:24-alpine@sha256:116b800c3754b440ee0aa3ed2f20f5bf3d99a554bfd9adeea09ea8017f6e85f5 AS build
+FROM node:25-alpine@sha256:bdf2cca6fe3dabd014ea60163eca3f0f7015fbd5c7ee1b0e9ccb4ced6eb02ef4 AS build
 WORKDIR /app
 
 # Dependencias primero (capa cacheable). Sin scripts de instalación: el postinstall de
@@ -15,7 +15,7 @@ RUN npm ci --ignore-scripts
 COPY web/ web/
 RUN npm run build --workspace web
 
-FROM node:24-alpine@sha256:116b800c3754b440ee0aa3ed2f20f5bf3d99a554bfd9adeea09ea8017f6e85f5
+FROM node:25-alpine@sha256:bdf2cca6fe3dabd014ea60163eca3f0f7015fbd5c7ee1b0e9ccb4ced6eb02ef4
 WORKDIR /app
 ENV NODE_ENV=production HOST=0.0.0.0 PORT=3000
 # .output trae el servidor y sus dependencias; no hace falta node_modules.
