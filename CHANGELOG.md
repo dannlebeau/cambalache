@@ -4,6 +4,12 @@ Todos los cambios relevantes de este proyecto se documentan en este archivo.
 
 El formato sigue [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) y el proyecto usa [Versionado Semántico](https://semver.org/lang/es/).
 
+## [0.2.1] - 2026-11-15
+
+### Changed
+
+- `PLAN.md` pasa a describir la migración del frontend a Nuxt (Vue 3 + TypeScript, con SSR) y, después, el backend propio en un repo aparte (pagos reales, correos y fotos), con el diagnóstico del stack y las decisiones de stack (Postgres en Supabase gestionado, Flow, Resend, VPS). Solo documentación.
+
 ## [0.2.0] - 2026-11-15
 
 ### Added
@@ -46,5 +52,6 @@ El formato sigue [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) 
 - Font Awesome desde cdnjs con SRI (`integrity` + `crossorigin`).
 - `dev-server.js` solo sirve archivos dentro de la carpeta del proyecto y responde 400 a rutas mal codificadas.
 
+[0.2.1]: https://github.com/dannlebeau/cambalache/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/dannlebeau/cambalache/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/dannlebeau/cambalache/releases/tag/v0.1.0
