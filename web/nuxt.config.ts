@@ -7,7 +7,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2026-11-01',
   devtools: { enabled: false },
   modules: ['@nuxt/eslint', '@nuxtjs/supabase'],
-  css: ['~/assets/css/tema.css', '~/assets/css/base.css', '~/assets/css/catalogo.css'],
+  css: ['~/assets/css/tema.css', '~/assets/css/base.css', '~/assets/css/catalogo.css', '~/assets/css/subastas.css'],
 
   // Sesión en cookies para que el servidor sepa quién es en el SSR. Sin redirección
   // automática: el acceso lo decide app/middleware/cuenta.global.ts. Sin tipos generados de

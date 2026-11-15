@@ -66,6 +66,8 @@ La app necesita el `.env` (URL y publishable key de Supabase); sin él, las pág
 
 La portada (`/`) es el catálogo: pestañas Yu-Gi-Oh! / Pokémon / Mitos y Leyendas, búsqueda, filtro por tipo, "Cargar más" y detalle con zoom y traducción. Las cartas se cargan en el navegador desde las APIs públicas, así que el servidor no espera a que respondan. "Agregar al canasto" y "Subastar esta carta" siguen solo en el sitio actual hasta los sub-pasos 1g y 1e.
 
+Las subastas (`/subastas` y `/subasta/<id>`) se arman en el servidor, así que el HTML ya trae nombres, precios e historial para los buscadores. Una subasta que no existe responde 404. En el navegador se actualizan solas con Supabase Realtime cuando alguien puja, compra o cierra. Pujar y "Comprar ya" (con confirmación en la página) los valida la base. Sin sesión llevan a `/entrar`, que vuelve a la subasta. Publicar una carta y "Mi cuenta" siguen en el sitio actual hasta el sub-paso 1e.
+
 Cada página tiene en el nav un selector de tema que rota Sistema → Claro → Oscuro y recuerda la elección en el navegador.
 
 ## Estructura
