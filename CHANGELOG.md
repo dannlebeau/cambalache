@@ -4,6 +4,22 @@ Todos los cambios relevantes de este proyecto se documentan en este archivo.
 
 El formato sigue [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) y el proyecto usa [Versionado Semántico](https://semver.org/lang/es/).
 
+## [0.6.0] - 2026-11-15
+
+### Added
+
+- Subastas en la app Nuxt: `/subastas` (grilla con reloj, filtro por juego y búsqueda sin tildes) y `/subasta/<id>` (detalle, cifras, historial anónimo, pujar y "Comprar ya"). Se arman en el servidor (SSR), así que el HTML ya trae nombres, precios e historial; título y descripción por subasta para buscadores.
+- Pujas en vivo con Supabase Realtime: el listado y el detalle se recargan solos (agrupando los eventos seguidos) cuando alguien puja, compra o una subasta cierra y vuelve en ronda 2. El canal se cierra al salir de la página.
+- "Comprar ya" pide confirmación dentro de la página (sin `confirm()`). Pujar y comprar no se duplican con doble clic; los errores de la base (puja bajo la mínima, subasta cerrada, propia carta) se muestran y la página toma los datos nuevos.
+- Una subasta que no existe o un id inválido responde 404, con página de error en español (`app/error.vue`).
+- `/entrar?volver=<ruta>` vuelve a la subasta tras iniciar sesión; solo acepta rutas internas.
+- Links Catálogo y Subastas en la barra.
+- Pruebas de Vitest: formatos (CLP, fecha en hora de Chile, tiempo restante), validación del monto, filtro, id de la ruta, `rutaVolver` y la escucha de Realtime con un cliente simulado.
+
+### Changed
+
+- `PLAN.md` (sección 4.4), `AGENTS.md` y `README.md` describen las subastas de la app Nuxt.
+
 ## [0.5.0] - 2026-11-15
 
 ### Added
@@ -114,6 +130,7 @@ El formato sigue [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) 
 - Font Awesome desde cdnjs con SRI (`integrity` + `crossorigin`).
 - `dev-server.js` solo sirve archivos dentro de la carpeta del proyecto y responde 400 a rutas mal codificadas.
 
+[0.6.0]: https://github.com/dannlebeau/cambalache/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/dannlebeau/cambalache/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/dannlebeau/cambalache/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/dannlebeau/cambalache/compare/v0.2.2...v0.3.0

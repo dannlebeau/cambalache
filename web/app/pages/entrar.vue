@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MENSAJE_CUENTA_BLOQUEADA, validarLogin } from '~/utils/cuenta'
+import { MENSAJE_CUENTA_BLOQUEADA, rutaVolver, validarLogin } from '~/utils/cuenta'
 
 useHead({ title: 'Iniciar sesión · Cambalache' })
 
@@ -27,7 +27,8 @@ function entrar() {
       throw new Error(MENSAJE_CUENTA_BLOQUEADA)
     }
     password.value = ''
-    await navigateTo(cuenta?.debeCambiarPassword ? '/cambiar-password' : '/')
+    // `volver` lo pone, por ejemplo, la subasta en la que se quiso pujar sin sesión.
+    await navigateTo(cuenta?.debeCambiarPassword ? '/cambiar-password' : rutaVolver(route.query.volver))
   })
 }
 </script>

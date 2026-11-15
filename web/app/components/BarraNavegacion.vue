@@ -13,6 +13,10 @@ function salir() {
 <template>
   <header class="barra">
     <NuxtLink to="/" class="marca">Cambalache</NuxtLink>
+    <nav class="nav-links" aria-label="Secciones">
+      <NuxtLink to="/">Catálogo</NuxtLink>
+      <NuxtLink to="/subastas" :aria-current="$route.path.startsWith('/subasta') ? 'page' : undefined">Subastas</NuxtLink>
+    </nav>
     <nav class="nav-acciones" aria-label="Cuenta">
       <template v-if="cuenta">
         <span v-if="cuenta.esAdmin" class="etiqueta-admin">Admin</span>

@@ -1,6 +1,6 @@
 # PLAN — Frontend en Nuxt y, después, backend propio (pagos reales, correos y fotos)
 
-> Estado: **decisiones técnicas tomadas (2026-11-15). Foco actual: solo el frontend (paso 1). Avance: 1a hecho (PR #6); 1b hecho (PR #9, pasos en la sección 4.2); 1c hecho (rama `feat/nuxt-catalogo`, pasos en la sección 4.3); siguiente, 1d (subastas públicas con SSR). El backend (pasos 2 a 6) queda planificado pero no se empieza hasta cerrar el paso 1.** Quedan pendientes los temas legales/tributarios antes de cobrar de verdad. Reemplaza al plan del mercado de subastas (ya mezclado en `main`, ver `CHANGELOG.md` 0.2.0).
+> Estado: **decisiones técnicas tomadas (2026-11-15). Foco actual: solo el frontend (paso 1). Avance: 1a hecho (PR #6); 1b hecho (PR #9, pasos en la sección 4.2); 1c hecho (PR #10, pasos en la sección 4.3); 1d hecho (rama `feat/nuxt-subastas`, pasos en la sección 4.4); siguiente, 1e (Mi cuenta y publicar carta). El backend (pasos 2 a 6) queda planificado pero no se empieza hasta cerrar el paso 1.** Quedan pendientes los temas legales/tributarios antes de cobrar de verdad. Reemplaza al plan del mercado de subastas (ya mezclado en `main`, ver `CHANGELOG.md` 0.2.0).
 
 ## 1. Objetivo
 
@@ -109,6 +109,19 @@ Decisiones: el catálogo reemplaza la portada provisoria en `/`. Las cartas se c
 | 3 | `composables/useCatalogo.ts`: estado, espera de 350 ms en la búsqueda, reinicio al cambiar de pestaña o filtro, sin doble carga, y descarte de respuestas viejas | Pruebas: doble "Cargar más" hace un solo pedido; la respuesta de una búsqueda vieja no pisa la nueva |
 | 4 | `pages/index.vue` + componentes `TarjetaCarta` y `DetalleCarta` (modal con zoom, traducción y Escape) | En el navegador: pestañas, búsqueda, filtro, "Cargar más", modal, zoom, traducción; búsqueda sin resultados y API bloqueada muestran su mensaje |
 | 5 | Lint, tipos, pruebas, build y la imagen con `compose` | Todo en verde en local; `/` responde 200 desde el contenedor |
+
+#### 4.4 Pasos del sub-paso 1d (rama `feat/nuxt-subastas`)
+
+Decisiones: `/subastas` y `/subasta/[id]` se renderizan en el servidor con `useAsyncData` (vista `subastas_publicas` e `historial_pujas`, llamando antes a `procesar_vencimientos` como hoy). Una subasta que no existe o un id inválido responde **404**. El filtro por juego y la búsqueda del listado se aplican en el navegador y no quedan en la URL, igual que hoy. La cuenta regresiva depende de la hora, así que el servidor manda la fecha de cierre fija (zona `America/Santiago`) y el navegador la cambia por el reloj, sin errores de hidratación. Realtime solo en el navegador, sobre la tabla `subastas`, con recarga agrupada (300-400 ms) y canal cerrado al salir de la página. "Comprar ya" pide confirmación dentro de la página (no `confirm()`). Sin sesión, pujar o comprar llevan a `/entrar?volver=…`, que vuelve a la subasta tras entrar. "Publicar una carta" y el link a "Mi cuenta" quedan para 1e. La barra suma los links Catálogo y Subastas. Los datos de prueba (usuarios, carta aprobada, subasta) se crean en el Supabase local con un script fuera del repo; no se agrega `seed.sql` para no tocar las pruebas pgTAP.
+
+| # | Paso | Cómo se demuestra |
+|---|---|---|
+| 1 | `utils/subastas.ts`: tipos, `formatCLP`, `tiempoRestante(fin, ahora)`, fecha fija, textos de resultado, validación del monto y filtro del listado | Pruebas de Vitest |
+| 2 | `/entrar` acepta `volver` (solo rutas internas: `/…` y no `//…`) | Prueba de la validación; en el navegador vuelve a la subasta |
+| 3 | `composables/useSubastasEnVivo.ts` (canal Realtime + recarga agrupada) y componente `RelojSubasta` | Pruebas: varios eventos seguidos hacen una sola recarga; al desmontar se cierra el canal |
+| 4 | `pages/subastas.vue` (grilla, filtro, búsqueda, vacío, error) | `curl` del HTML trae los nombres y precios; filtro y búsqueda en el navegador |
+| 5 | `pages/subasta/[id].vue` (detalle, cifras, historial, pujar, comprar ya con confirmación, avisos de pago simulado, `useHead` con título y descripción) | `curl` trae el HTML con datos; id inexistente da 404; dos pestañas ven la puja al instante; doble clic en "Pujar" hace una sola puja; monto bajo, vacío o propia carta muestran el error de la base |
+| 6 | Lint, tipos, pruebas, build e imagen con `compose` contra el Supabase local | Todo en verde en local; `/subastas` responde 200 desde el contenedor |
 
 Despliegue en el VPS (Caddy + Cloudflare, imagen en GHCR por SHA) se prepara al final del paso 1 o al empezar el backend, lo que ocurra primero.
 

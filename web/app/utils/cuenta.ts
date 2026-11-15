@@ -56,6 +56,14 @@ export function validarLogin(email: string, password: string): string | null {
   return null
 }
 
+// Ruta a la que volver tras iniciar sesión (?volver=). Solo rutas internas: "/algo", nunca
+// "//otro.sitio" ni "/\otro.sitio" (los navegadores los tratan como otro dominio).
+export function rutaVolver(valor: unknown): string {
+  const texto = Array.isArray(valor) ? valor[0] : valor
+  if (typeof texto !== 'string' || !texto.startsWith('/') || /^\/[/\\]/.test(texto)) return '/'
+  return texto
+}
+
 // Mensaje en español para errores de Supabase. Los de las funciones de la base ya vienen
 // en español (raise exception); los de Auth y de red se traducen aquí.
 export function mensajeError(err: unknown): string {
