@@ -1,0 +1,33 @@
+# Aplica las migraciones en un Postgres de Supabase y corre las pruebas pgTAP de las reglas
+# del mercado (supabase/tests). Si falla, el PR queda en rojo.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  pruebas-db:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      - name: Instalar Supabase CLI
+        uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
+        with:
+          version: 2.122.0
+
+      # Solo Postgres (con las migraciones aplicadas); el resto de servicios no hace falta.
+      - name: Levantar la base
+        run: supabase db start
+
+      - name: Pruebas pgTAP
+        run: supabase test db

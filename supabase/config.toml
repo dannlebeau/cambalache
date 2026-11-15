@@ -1,0 +1,6 @@
+# Configuración del Supabase local (CLI) para correr migraciones y pruebas. Lo que no está
+# aquí usa los valores por defecto del CLI. El proyecto en la nube se configura en su panel.
+project_id = "cambalache"
+
+[db]
+major_version = 15

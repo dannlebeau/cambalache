@@ -1,54 +1,70 @@
-# PLAN — Estandarizar Cambalache
+# PLAN — Mercado de subastas en consignación
 
-> Estado: **aprobado 2026-11-15**. En curso en la rama `chore/estandarizar-repo`.
+> Estado: **aprobado 2026-11-15**. En curso en la rama `feat/mercado-subastas` (parte de `chore/estandarizar-repo`). Siguiente paso: el primero sin marcar en "Estado".
 
 ## 1. Objetivo
 
-Dejar el repo con los archivos base y las convenciones comunes de `dotfiles/AGENTS.md`, sin cambiar cómo funciona el sitio.
+Cambalache pasa a ser una casa de subastas en consignación: el vendedor manda su carta, el admin la recibe y aprueba (queda en custodia), se subasta 3 días con pujas en vivo y compra inmediata, el ganador paga, el admin despacha y liquida 10% para Cambalache y 90% para el vendedor. Los intercambios carta por carta se mantienen aparte, como hoy.
 
 ## 2. Decisiones
 
-- **Stack:** se mantiene HTML + CSS inline + JS vanilla, sin dependencias ni build.
-- **Tema:** selector Sistema / Claro / Oscuro en las 5 páginas con un script compartido (`assets/js/tema.js`), siguiendo la referencia de `search-gangas-app`. El esquema actual pasa a ser el modo oscuro y se agrega uno claro.
-- **Licencia:** `UNLICENSED` © dannlebeau.
-- **Fuera de alcance:** pagos reales, backend, cambios de flujo o de contenido legal.
+- **Backend:** Supabase en un proyecto propio de Cambalache (Auth, Postgres, Realtime). Toda regla de negocio (pujas, cierres, estados, permisos) vive en Postgres: funciones `security definer` + RLS. El navegador nunca escribe tablas directo, solo llama funciones (RPC).
+- **Frontend:** sigue en HTML + JS vanilla sin build. `supabase-js@2.118.0` (UMD) desde jsDelivr con SRI. Configuración pública (URL y publishable key) en `assets/js/config.js`.
+- **Cuentas:** Supabase Auth (correo + contraseña) reemplaza a las cuentas en `localStorage` en todo el sitio. Los puntos de intercambio quedan locales por usuario.
+- **Reglas de subasta** (editables por admin en `configuracion`):
+  - Duración 72 h. Puja mínima: la más alta + 5% (o + $500 si es mayor); la primera, al menos el precio base.
+  - Compra inmediata: (puja más alta o precio base) × 1,20, redondeado a $100. Cierra la subasta al instante.
+  - Anti-sniping: puja en los últimos 5 min alarga el cierre 5 min.
+  - Sin pujas: se republica sola con −10%; si quedaría bajo el precio mínimo del vendedor (opcional), pasa a "por devolver".
+  - Ganador sin pagar en 48 h: queda bloqueado y la carta pasa al siguiente mejor postor (por su puja); si no hay, se republica con −10%.
+  - Comisión 10% sobre el monto final pagado (recargo incluido); vendedor 90%.
+- **Pagos:** simulados (botón "Simular pago"). Nada se cobra de verdad.
+- **Cierres automáticos:** `pg_cron` cada minuto llama `procesar_vencimientos()`; además cada lectura de subastas la llama, para no depender solo del cron.
+- **Admin:** `admin.html`. El primer admin (master) se crea una vez en el panel de Supabase con contraseña temporal y se marca admin con una línea SQL documentada; en su primer login la app obliga a cambiarla. Desde ahí, los admins se gestionan en la app (dar/quitar admin, bloquear usuarios).
+- **Fuera de alcance:** pagos reales, fotos subidas por el vendedor (se usa la imagen del catálogo), envíos/courier, correos de notificación.
 
 ## 3. Pasos
 
-### Paso 1 — Archivos base
+### Paso 1 — Esquema y reglas en Postgres
 
-- `AGENTS.md`, `CLAUDE.md`, `.gitignore` y `.github/` (zizmor, gitleaks, Dependabot, changelog, tag) desde `dotfiles/templates/`.
-- **Cómo lo demuestro:** `uvx zizmor .github/` → sin hallazgos.
+- `supabase/migrations/*.sql`: tablas, estados, funciones RPC, RLS, Realtime y `pg_cron`.
+- `supabase/tests/*.sql`: pruebas pgTAP de las reglas.
+- **Cómo lo demuestro:** las pruebas pasan en un Postgres 15 desechable local (con un esquema `auth` mínimo) y en CI con `supabase start` + `supabase test db`.
 
-### Paso 2 — README
+### Paso 2 — Cuentas con Supabase Auth
 
-- Reordenar según Standard Readme (plantilla de `dotfiles`), conservando el contenido actual como secciones propias.
-- **Cómo lo demuestro:** revisión de enlaces internos (`*.html`, `PLAN.md`, `CHANGELOG.md`) → todos existen.
+- `config.js`, cliente compartido, modal de login/registro sobre Supabase, cambio obligatorio de contraseña temporal.
+- **Cómo lo demuestro:** registro, login, logout y cambio de contraseña contra el proyecto Supabase real.
 
-### Paso 3 — Selector de tema
+### Paso 3 — Páginas del mercado
 
-- Script en `<head>` antes de pintar, botón que rota Sistema → Claro → Oscuro, guardado en `localStorage`, tokens en `@media (prefers-color-scheme: dark) { :root:not([data-theme=light]) }` y `:root[data-theme=dark]`.
-- **Cómo lo demuestro:** abrir cada página, rotar los 3 modos y recargar → se mantiene el modo elegido.
+- `subastas.html` (listado con cuenta regresiva), `subasta.html` (detalle, pujas en vivo, compra inmediata), `publicar.html`, `mi-cuenta.html` (mis publicaciones, mis pujas/compras, pago simulado).
+- **Cómo lo demuestro:** dos navegadores con cuentas distintas pujando en la misma subasta; la puja de uno aparece en el otro sin recargar; puja bajo el mínimo y doble envío rechazados.
 
-### Paso 4 — Seguridad menor
+### Paso 4 — Panel de admin
 
-- SRI (`integrity` + `crossorigin`) en Font Awesome; `dev-server.js` solo sirve archivos dentro de la carpeta del proyecto.
-- **Cómo lo demuestro:** `curl --path-as-is http://localhost:3000/../README.md` → 404; las páginas siguen cargando íconos.
+- Recepción (aprobar/rechazar), ventas (despachar, liquidar), devoluciones, configuración y mantenedor de usuarios.
+- **Cómo lo demuestro:** flujo completo publicar → aprobar → pujar → cerrar → pagar → despachar → liquidar con montos 10/90 correctos.
 
-### Paso 5 — Cierre
+### Paso 5 — Integración y textos
 
-- `CHANGELOG.md` con `## [0.1.0] - 2026-11-15`, commit, push y PR.
-- **Cómo lo demuestro:** PR abierto con la verificación de cada paso.
+- Catálogo con "Subastar esta carta"; canasto solo con intercambios; nav con Subastas y Mi cuenta; `terminos.html`, `acerca-de.html`, README y AGENTS actualizados.
+- **Cómo lo demuestro:** enlaces sin roturas; capturas en claro y oscuro de cada página nueva.
+
+### Paso 6 — Cierre
+
+- `CHANGELOG.md` `## [0.2.0] - 2026-11-15`, commit, push y PR.
+- **Cómo lo demuestro:** PR abierto con la verificación de cada paso y CI en verde.
 
 ## 4. Estado
 
-- [x] Paso 1 — zizmor no corre en local (falta `uv`): se verifica en el CI del PR (`security.yaml`).
-- [x] Paso 2 — anclas y archivos enlazados del README revisados con un script: sin enlaces rotos.
-- [x] Paso 3 — Edge headless: las 5 páginas rotan Sistema → Claro → Oscuro → Sistema, actualizan `aria-label` e ícono, mantienen "Claro" al recargar y un valor inválido en `localStorage` cae en Sistema. Capturas en claro y oscuro revisadas.
-- [x] Paso 4 — SRI coincide con el publicado por cdnjs; rutas hacia afuera (`/../`, `%2e%2e%2f`, `%5c`) → 404, `%` mal codificado → 400.
-- [ ] Paso 5 — commit y push hechos; falta abrir el PR (ver notas).
+- [x] Paso 1 — 48 pruebas pgTAP pasan en un Postgres 15 desechable (esquema `auth` mínimo + subconjunto de pgTAP); una mutación de dos valores esperados hace fallar exactamente esas dos. En CI: `supabase db start` + `supabase test db`.
+- [ ] Paso 2
+- [ ] Paso 3
+- [ ] Paso 4
+- [ ] Paso 5
+- [ ] Paso 6
 
 ## 5. Notas / fallos
 
-- `gh` no está instalado en este equipo: el PR se abre desde el link que da `git push`.
-- Durante el paso 3 apareció un bug previo: `.nav-links a` pisaba el `color:#fff` del botón "Mi canasto" (ilegible en claro). Corregido en `index.html` y `canasto.html`.
+- Los pasos 2 a 4 se verifican de punta a punta solo cuando exista el proyecto Supabase (lo crea el dueño y entrega URL + publishable key).
