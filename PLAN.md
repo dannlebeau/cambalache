@@ -1,70 +1,81 @@
-# PLAN — Mercado de subastas en consignación
+# PLAN — Backend propio: pagos reales, correos y fotos
 
-> Estado: **aprobado 2026-11-15**. En curso en la rama `feat/mercado-subastas` (parte de `chore/estandarizar-repo`). Siguiente paso: crear el proyecto Supabase, aplicar la migración, completar `assets/js/config.js` y verificar los pasos 2 a 4 de punta a punta.
+> Estado: **borrador, pendiente de aprobación**. Reemplaza al plan del mercado de subastas (ya mezclado en `main`, ver `CHANGELOG.md` 0.2.0). Nada de este plan se implementa hasta que se apruebe el paso 0.
 
 ## 1. Objetivo
 
-Cambalache pasa a ser una casa de subastas en consignación: el vendedor manda su carta, el admin la recibe y aprueba (queda en custodia), se subasta 3 días con pujas en vivo y compra inmediata, el ganador paga, el admin despacha y liquida 10% para Cambalache y 90% para el vendedor. Los intercambios carta por carta se mantienen aparte, como hoy.
+Pasar de pagos simulados a reales, con correos transaccionales y fotos reales subidas por el vendedor, sin perder las garantías actuales (reglas atómicas en la base, pruebas, RLS).
 
-## 2. Decisiones
+## 2. Stack actual de JS (diagnóstico)
 
-- **Backend:** Supabase en un proyecto propio de Cambalache (Auth, Postgres, Realtime). Toda regla de negocio (pujas, cierres, estados, permisos) vive en Postgres: funciones `security definer` + RLS. El navegador nunca escribe tablas directo, solo llama funciones (RPC).
-- **Frontend:** sigue en HTML + JS vanilla sin build. `supabase-js@2.118.0` (UMD) desde jsDelivr con SRI. Configuración pública (URL y publishable key) en `assets/js/config.js`.
-- **Cuentas:** Supabase Auth (correo + contraseña) reemplaza a las cuentas en `localStorage` en todo el sitio. Los puntos de intercambio quedan locales por usuario.
-- **Reglas de subasta** (editables por admin en `configuracion`):
-  - Duración 72 h. Puja mínima: la más alta + 5% (o + $500 si es mayor); la primera, al menos el precio base.
-  - Compra inmediata: (puja más alta o precio base) × 1,20, redondeado a $100. Cierra la subasta al instante.
-  - Anti-sniping: puja en los últimos 5 min alarga el cierre 5 min.
-  - Sin pujas: se republica sola con −10%; si quedaría bajo el precio mínimo del vendedor (opcional), pasa a "por devolver".
-  - Ganador sin pagar en 48 h: queda bloqueado y la carta pasa al siguiente mejor postor (por su puja); si no hay, se republica con −10%.
-  - Comisión 10% sobre el monto final pagado (recargo incluido); vendedor 90%.
-- **Pagos:** simulados (botón "Simular pago"). Nada se cobra de verdad.
-- **Cierres automáticos:** `pg_cron` cada minuto llama `procesar_vencimientos()`; además cada lectura de subastas la llama, para no depender solo del cron.
-- **Admin:** `admin.html`. El primer admin (master) se crea una vez en el panel de Supabase con contraseña temporal y se marca admin con una línea SQL documentada; en su primer login la app obliga a cambiarla. Desde ahí, los admins se gestionan en la app (dar/quitar admin, bloquear usuarios).
-- **Fuera de alcance:** pagos reales, fotos subidas por el vendedor (se usa la imagen del catálogo), envíos/courier, correos de notificación.
+| Aspecto | Hoy |
+|---|---|
+| Lenguaje | JS vanilla ES2020+ (`async/await`, `?.`, `??`, `catch {}` sin variable, arrow functions). Sin TypeScript |
+| Módulos | Ninguno: scripts clásicos con globales (`<script src>`); el orden de carga en cada HTML es una dependencia implícita |
+| Build / paquetes | Ninguno: no hay `package.json`, lockfile, linter, formateador ni tipos |
+| Dependencias | `supabase-js@2.118.0` por CDN con SRI; Font Awesome por CDN |
+| Node | Solo `dev-server.js` (CommonJS, sin dependencias). Sin versión fijada; en local corre v26.13.1 |
 
-## 3. Pasos
+Lo que sí vale la pena mejorar (barato, sin build y sin cambiar de lenguaje): ES modules nativos (`<script type="module">`), `package.json` con `engines` y lockfile, ESLint y chequeo de tipos con JSDoc + `tsc --checkJs` (sin compilar nada). El backend nuevo sí va en **TypeScript**.
 
-### Paso 1 — Esquema y reglas en Postgres
+## 3. Decisión de base de datos (paso 0, la define el usuario)
 
-- `supabase/migrations/*.sql`: tablas, estados, funciones RPC, RLS, Realtime y `pg_cron`.
-- `supabase/tests/*.sql`: pruebas pgTAP de las reglas.
-- **Cómo lo demuestro:** las pruebas pasan en un Postgres 15 desechable local (con un esquema `auth` mínimo) y en CI con `supabase start` + `supabase test db`.
+**Recomendación: quedarse en Postgres. No migrar a MongoDB Atlas.**
 
-### Paso 2 — Cuentas con Supabase Auth
+- El dominio es transaccional y relacional: pujas, saldos, comisión, estados y liquidaciones. Necesita transacciones multi-fila, `FOR UPDATE` en pujas simultáneas, restricciones e integridad referencial. Postgres lo da de fábrica; Mongo soporta transacciones, pero con más costo y sin restricciones declarativas.
+- Se perdería lo ya construido y probado: ~800 líneas de reglas en SQL, RLS, `pg_cron`, Realtime y 202 líneas de pruebas pgTAP. Habría que reescribirlo todo en código de aplicación y volver a probarlo.
+- Supabase **no se queda corto** por tener pagos o correos: eso va en el backend propio. Supabase sigue siendo Postgres + Auth + Storage + Realtime. Si algún día pesa, Postgres es portable (Neon, RDS, un VPS) sin reescribir el modelo.
+- Mongo sería razonable solo para datos sin esquema fijo (catálogo de cartas cacheado, logs de eventos). Hoy eso no es un problema.
 
-- `config.js`, cliente compartido, modal de login/registro sobre Supabase, cambio obligatorio de contraseña temporal.
-- **Cómo lo demuestro:** registro, login, logout y cambio de contraseña contra el proyecto Supabase real.
+Opciones a elegir:
 
-### Paso 3 — Páginas del mercado
+1. **Postgres en Supabase + backend propio al lado** (recomendada): el navegador sigue llamando RPC para lo ya hecho; el backend maneja pagos, correos y fotos, y usa la `service_role` solo en el servidor.
+2. Postgres propio (Neon/RDS) y se quita Supabase: más trabajo (Auth, Realtime y Storage a mano) sin beneficio claro hoy.
+3. MongoDB Atlas: **no recomendada**; implica reescribir todo el modelo y las pruebas.
 
-- `subastas.html` (listado con cuenta regresiva), `subasta.html` (detalle, pujas en vivo, compra inmediata), `publicar.html`, `mi-cuenta.html` (mis publicaciones, mis pujas/compras, pago simulado).
-- **Cómo lo demuestro:** dos navegadores con cuentas distintas pujando en la misma subasta; la puja de uno aparece en el otro sin recargar; puja bajo el mínimo y doble envío rechazados.
+## 4. Pasos (suponiendo la opción 1)
 
-### Paso 4 — Panel de admin
+Cada paso termina en su propia rama + PR, con CHANGELOG y verificación en CI.
 
-- Recepción (aprobar/rechazar), ventas (despachar, liquidar), devoluciones, configuración y mantenedor de usuarios.
-- **Cómo lo demuestro:** flujo completo publicar → aprobar → pujar → cerrar → pagar → despachar → liquidar con montos 10/90 correctos.
+### Paso 0 — Decisiones del usuario
+- Base de datos (sección 3), proveedor de pagos (Flow, Webpay Plus o Mercado Pago), proveedor de correo (Resend o Postmark) y dónde se hospeda el backend (Fly.io, Railway, Cloud Run o un VPS).
+- Aspectos legales y tributarios en Chile: cobrar por cuenta de terceros (consignación), boleta/factura electrónica en el SII, retención del 90% al vendedor, términos y privacidad. **Consultar a un contador/abogado antes de cobrar de verdad.** Este plan no los resuelve.
+- Demostración: decisiones anotadas en este archivo.
 
-### Paso 5 — Integración y textos
+### Paso 1 — Modernizar el JS del frontend (sin cambiar de lenguaje)
+- `package.json` con `engines`, lockfile, ESLint y `tsc --checkJs`; CI con `--frozen-lockfile`. (Rompe hoy la regla "sin npm" del `AGENTS.md`: actualizarla en el mismo PR, previa aprobación.)
+- Migrar los scripts clásicos a ES modules, una página a la vez.
+- Demostración: CI en verde (lint + tipos + pgTAP) y cada página abierta en el navegador sin errores de consola.
 
-- Catálogo con "Subastar esta carta"; canasto solo con intercambios; nav con Subastas y Mi cuenta; `terminos.html`, `acerca-de.html`, README y AGENTS actualizados.
-- **Cómo lo demuestro:** enlaces sin roturas; capturas en claro y oscuro de cada página nueva.
+### Paso 2 — Esqueleto del backend (TypeScript)
+- Carpeta `backend/` con Node LTS y TypeScript, un framework mínimo (Fastify), validación con `zod` y config por variables de entorno. Verifica el JWT de Supabase en cada petición. Imagen de contenedor privada en GHCR, desplegada por SHA.
+- Demostración: endpoint `/salud` y un endpoint autenticado probados en CI con pruebas automáticas.
 
-### Paso 6 — Cierre
+### Paso 3 — Pagos reales
+- El backend crea la orden de pago al ganar la subasta y recibe el **webhook** del proveedor (firma verificada e idempotencia por id de evento). Solo el webhook marca "pagado", llamando a una función de Postgres; se elimina `simular_pago` del alcance del navegador.
+- Reembolsos y pagos fallidos o vencidos pasan por la misma máquina de estados. Liquidación 90% al vendedor registrada como asiento, no como un campo suelto.
+- Demostración: pruebas contra el sandbox del proveedor, webhook repetido sin doble efecto, y pruebas pgTAP del nuevo flujo.
 
-- `CHANGELOG.md` `## [0.2.0] - 2026-11-15`, commit, push y PR.
-- **Cómo lo demuestro:** PR abierto con la verificación de cada paso y CI en verde.
+### Paso 4 — Correos transaccionales
+- Cola en Postgres (tabla `correos_pendientes`) procesada por el backend con reintentos. Plantillas: superada en una puja, subasta ganada, pago recibido, pago por vencer (48 h), carta aprobada/rechazada, liquidación.
+- SPF, DKIM y DMARC configurados en el dominio.
+- Demostración: correo real a una casilla de prueba por cada plantilla; un fallo del proveedor reintenta y no duplica.
 
-## 4. Estado
+### Paso 5 — Fotos reales de las cartas
+- Subida directa del navegador a Supabase Storage (o S3/R2) con URL prefirmada que emite el backend; límite de tamaño y de tipo (JPEG/PNG/WebP), comprobación del contenido real del archivo, y nombre aleatorio.
+- El admin ve las fotos al aprobar la carta. Bucket privado con URLs firmadas para lo no aprobado.
+- Demostración: subir un archivo disfrazado (por ejemplo `.exe` renombrado a `.jpg`) y que sea rechazado.
 
-- [x] Paso 1 — 48 pruebas pgTAP pasan en un Postgres 15 desechable (esquema `auth` mínimo + subconjunto de pgTAP); una mutación de dos valores esperados hace fallar exactamente esas dos. En CI: `supabase db start` + `supabase test db`.
-- [ ] Paso 2 — código listo (`auth.js`); falta probarlo contra el proyecto Supabase real.
-- [ ] Paso 3 — código listo; sin Supabase, las 5 páginas cargan sin errores de JS y muestran "no está conectado". Falta la prueba con dos cuentas.
-- [ ] Paso 4 — código listo; falta el flujo completo contra Supabase.
-- [x] Paso 5 — textos, README y AGENTS actualizados; enlaces internos de README y de los HTML sin roturas. Capturas pendientes junto con la prueba real.
-- [ ] Paso 6
+### Paso 6 — Endurecer y cerrar
+- Límite de tasa, registro de eventos de pago, copia de seguridad de la base y plan de restauración probado, revisión de seguridad (secretos, `service_role` solo en el servidor) y checklist antes de abrir al público.
+- Intercambios y puntos (hoy en `localStorage`) a Postgres antes de que los puntos tengan valor.
 
-## 5. Notas / fallos
+## 5. Riesgos
 
-- Los pasos 2 a 4 se verifican de punta a punta solo cuando exista el proyecto Supabase (lo crea el dueño y entrega URL + publishable key).
+- **Dinero real:** un bug en pagos o liquidación pierde plata de terceros. Por eso el webhook es la única fuente de verdad y todo movimiento queda como asiento auditable.
+- **Cumplimiento:** sin resolver lo tributario y legal (paso 0), no se debe cobrar.
+- **Dos fuentes de verdad:** el backend nunca duplica reglas que ya viven en Postgres; solo llama a las funciones.
+
+## 6. Fuera de alcance
+
+Courier y seguimiento de envíos, app móvil, notificaciones push, y reemplazar Supabase Auth.
