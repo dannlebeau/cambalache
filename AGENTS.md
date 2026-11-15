@@ -42,7 +42,7 @@ supabase test db     # pruebas pgTAP
 - Todo dato que venga de una API, de la base o del usuario se escribe con `escapeHtml` o `textContent`, nunca directo en `innerHTML`.
 - Los errores de las funciones de la base se escriben en español con `raise exception`; la UI los muestra tal cual vía `mensajeError` (`auth.js`).
 - Botones que envían algo usan `conBoton` (`mercado.js`) para evitar el doble envío.
-- No introducir frameworks, bundlers, TypeScript ni dependencias de npm sin pedirlo.
+- El proyecto es JavaScript con `package.json` (`npm run dev`). Las dependencias de npm, el lockfile y las herramientas de desarrollo (ESLint, chequeo de tipos) están permitidas; el sitio de producción sigue sin build. No introducir frameworks de UI ni bundlers sin pedirlo.
 - Colores como tokens CSS en `assets/css/tema.css`, con su versión oscura (ver selector de tema en `dotfiles/AGENTS.md` → Webs).
 
 ## Datos sensibles a cambios

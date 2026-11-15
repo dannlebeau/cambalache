@@ -4,6 +4,16 @@ Todos los cambios relevantes de este proyecto se documentan en este archivo.
 
 El formato sigue [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) y el proyecto usa [Versionado Semántico](https://semver.org/lang/es/).
 
+## [0.2.2] - 2026-11-15
+
+### Added
+
+- `package.json` con `engines` (Node 24+) y el script `npm run dev`.
+
+### Changed
+
+- `AGENTS.md` y `README.md`: el proyecto pasa a ser JavaScript con npm; se permiten dependencias y herramientas de desarrollo, no frameworks de UI ni bundlers sin pedirlo.
+
 ## [0.2.0] - 2026-11-15
 
 ### Added
@@ -46,5 +56,6 @@ El formato sigue [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) 
 - Font Awesome desde cdnjs con SRI (`integrity` + `crossorigin`).
 - `dev-server.js` solo sirve archivos dentro de la carpeta del proyecto y responde 400 a rutas mal codificadas.
 
+[0.2.2]: https://github.com/dannlebeau/cambalache/compare/v0.2.0...v0.2.2
 [0.2.0]: https://github.com/dannlebeau/cambalache/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/dannlebeau/cambalache/releases/tag/v0.1.0
