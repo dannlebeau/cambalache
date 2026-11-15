@@ -4,6 +4,22 @@ Todos los cambios relevantes de este proyecto se documentan en este archivo.
 
 El formato sigue [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) y el proyecto usa [Versionado Semántico](https://semver.org/lang/es/).
 
+## [0.7.0] - 2026-11-15
+
+### Added
+
+- `/mi-cuenta` en la app Nuxt: Mis compras (con "Pagar (simulado)", plazo y cuenta regresiva), Mis pujas (agrupadas por subasta, "Vas ganando" o "Te superaron"), Mis cartas publicadas (estado, código de envío, lo que recibe el vendedor y "Cancelar publicación") y cambio de contraseña. Las anclas `#compras`, `#pujas`, `#publicaciones` y `#seguridad` bajan a su sección.
+- `/publicar` en la app Nuxt: formulario con las mismas validaciones que el sitio actual, cálculo en vivo de comisión, lo que recibe el vendedor y "comprar ya" según `configuracion`, y pantalla de éxito con el código de envío. Desde el catálogo llegan juego, carta e imagen (solo `https://`).
+- Botón "Subastar esta carta" en el detalle del catálogo, link "Publicar una carta" en `/subastas` y "Mi cuenta" en la barra con sesión.
+- Pagar y cancelar piden confirmación dentro de la página (sin `confirm()`); doble clic no duplica el pago ni la publicación.
+- `/mi-cuenta` y `/publicar` se arman solo en el navegador (`routeRules`) y, sin sesión, mandan a `/entrar?volver=…`.
+- `useRpc()` para llamar funciones de Postgres con argumentos y lanzar su error.
+- Pruebas de Vitest: cálculo y validación de la publicación, carta desde la URL (imágenes que no son `https` descartadas), `urlPublicar`, agrupación de pujas, resumen de publicaciones y rutas que piden sesión.
+
+### Changed
+
+- `PLAN.md` (sección 4.5), `AGENTS.md` y `README.md` describen Mi cuenta y publicar en la app Nuxt.
+
 ## [0.6.0] - 2026-11-15
 
 ### Added
@@ -130,6 +146,7 @@ El formato sigue [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) 
 - Font Awesome desde cdnjs con SRI (`integrity` + `crossorigin`).
 - `dev-server.js` solo sirve archivos dentro de la carpeta del proyecto y responde 400 a rutas mal codificadas.
 
+[0.7.0]: https://github.com/dannlebeau/cambalache/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/dannlebeau/cambalache/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/dannlebeau/cambalache/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/dannlebeau/cambalache/compare/v0.3.0...v0.4.0

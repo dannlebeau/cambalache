@@ -7,7 +7,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2026-11-01',
   devtools: { enabled: false },
   modules: ['@nuxt/eslint', '@nuxtjs/supabase'],
-  css: ['~/assets/css/tema.css', '~/assets/css/base.css', '~/assets/css/catalogo.css', '~/assets/css/subastas.css'],
+  css: ['~/assets/css/tema.css', '~/assets/css/base.css', '~/assets/css/catalogo.css', '~/assets/css/subastas.css', '~/assets/css/cuenta.css'],
 
   // Sesión en cookies para que el servidor sepa quién es en el SSR. Sin redirección
   // automática: el acceso lo decide app/middleware/cuenta.global.ts. Sin tipos generados de
@@ -15,6 +15,12 @@ export default defineNuxtConfig({
   supabase: {
     redirect: false,
     types: false,
+  },
+  // Páginas privadas: solo en el navegador (no hay nada que indexar y así no se arma con datos
+  // de una cuenta en el servidor). Las públicas de subastas sí van con SSR.
+  routeRules: {
+    '/mi-cuenta': { ssr: false },
+    '/publicar': { ssr: false },
   },
   // 3001 para no chocar con el sitio actual (dev-server.js usa 3000) hasta el sub-paso 1h.
   devServer: { port: 3001 },

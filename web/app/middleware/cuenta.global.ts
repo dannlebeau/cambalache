@@ -2,8 +2,9 @@
 // - Cuenta bloqueada: se cierra la sesión y se manda a /entrar con el aviso.
 // - Contraseña temporal: solo puede ir a /cambiar-password hasta cambiarla.
 // - Con sesión, /entrar y /registro no tienen sentido: se vuelve a `volver` o al inicio.
-// Esto es la UI; las funciones de Postgres rechazan igual a una cuenta bloqueada.
-import { rutaVolver } from '~/utils/cuenta'
+// - Sin sesión, /mi-cuenta y /publicar mandan a /entrar y vuelven tras entrar.
+// Esto es la UI; las funciones de Postgres y la RLS rechazan igual lo que no corresponde.
+import { requiereSesion, rutaVolver } from '~/utils/cuenta'
 
 const SOLO_SIN_SESION = ['/entrar', '/registro']
 
@@ -19,7 +20,10 @@ export default defineNuxtRouteMiddleware(async (to) => {
     console.error('No se pudo cargar la cuenta:', err)
     return
   }
-  if (!cuenta) return
+  if (!cuenta) {
+    if (requiereSesion(to.path)) return navigateTo({ path: '/entrar', query: { volver: to.fullPath } })
+    return
+  }
 
   if (cuenta.bloqueado) {
     await cerrarSesion()

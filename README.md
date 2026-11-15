@@ -64,9 +64,11 @@ docker compose up --build    # imagen de producción contra un proyecto Supabase
 
 La app necesita el `.env` (URL y publishable key de Supabase); sin él, las páginas responden error 500. Ya tiene cuentas: crear cuenta (`/registro`), iniciar sesión (`/entrar`), salir y el cambio obligatorio de la contraseña temporal (`/cambiar-password`). Una cuenta bloqueada no puede quedar con sesión. La sesión va en una cookie, así que el servidor ya pinta el nav con el nombre del usuario.
 
-La portada (`/`) es el catálogo: pestañas Yu-Gi-Oh! / Pokémon / Mitos y Leyendas, búsqueda, filtro por tipo, "Cargar más" y detalle con zoom y traducción. Las cartas se cargan en el navegador desde las APIs públicas, así que el servidor no espera a que respondan. "Agregar al canasto" y "Subastar esta carta" siguen solo en el sitio actual hasta los sub-pasos 1g y 1e.
+La portada (`/`) es el catálogo: pestañas Yu-Gi-Oh! / Pokémon / Mitos y Leyendas, búsqueda, filtro por tipo, "Cargar más" y detalle con zoom y traducción. Las cartas se cargan en el navegador desde las APIs públicas, así que el servidor no espera a que respondan. "Subastar esta carta" lleva a `/publicar`; "Agregar al canasto" sigue solo en el sitio actual hasta el sub-paso 1g.
 
-Las subastas (`/subastas` y `/subasta/<id>`) se arman en el servidor, así que el HTML ya trae nombres, precios e historial para los buscadores. Una subasta que no existe responde 404. En el navegador se actualizan solas con Supabase Realtime cuando alguien puja, compra o cierra. Pujar y "Comprar ya" (con confirmación en la página) los valida la base. Sin sesión llevan a `/entrar`, que vuelve a la subasta. Publicar una carta y "Mi cuenta" siguen en el sitio actual hasta el sub-paso 1e.
+Las subastas (`/subastas` y `/subasta/<id>`) se arman en el servidor, así que el HTML ya trae nombres, precios e historial para los buscadores. Una subasta que no existe responde 404. En el navegador se actualizan solas con Supabase Realtime cuando alguien puja, compra o cierra. Pujar y "Comprar ya" (con confirmación en la página) los valida la base. Sin sesión llevan a `/entrar`, que vuelve a la subasta.
+
+`/publicar` (publicar una carta, con el cálculo de lo que recibes) y `/mi-cuenta` (compras con pago simulado, pujas, cartas publicadas y cambio de contraseña) piden sesión y se arman solo en el navegador. Pagar y cancelar una publicación piden confirmación en la página. Los puntos de intercambio siguen en el sitio actual hasta el sub-paso 1g.
 
 Cada página tiene en el nav un selector de tema que rota Sistema → Claro → Oscuro y recuerda la elección en el navegador.
 

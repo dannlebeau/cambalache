@@ -1,6 +1,6 @@
 # PLAN — Frontend en Nuxt y, después, backend propio (pagos reales, correos y fotos)
 
-> Estado: **decisiones técnicas tomadas (2026-11-15). Foco actual: solo el frontend (paso 1). Avance: 1a hecho (PR #6); 1b hecho (PR #9, pasos en la sección 4.2); 1c hecho (PR #10, pasos en la sección 4.3); 1d hecho (rama `feat/nuxt-subastas`, pasos en la sección 4.4); siguiente, 1e (Mi cuenta y publicar carta). El backend (pasos 2 a 6) queda planificado pero no se empieza hasta cerrar el paso 1.** Quedan pendientes los temas legales/tributarios antes de cobrar de verdad. Reemplaza al plan del mercado de subastas (ya mezclado en `main`, ver `CHANGELOG.md` 0.2.0).
+> Estado: **decisiones técnicas tomadas (2026-11-15). Foco actual: solo el frontend (paso 1). Avance: 1a hecho (PR #6); 1b hecho (PR #9, pasos en la sección 4.2); 1c hecho (PR #10, pasos en la sección 4.3); 1d hecho (PR #11, pasos en la sección 4.4); 1e hecho (rama `feat/nuxt-cuenta-publicar`, pasos en la sección 4.5); siguiente, 1f (panel de admin). El backend (pasos 2 a 6) queda planificado pero no se empieza hasta cerrar el paso 1.** Quedan pendientes los temas legales/tributarios antes de cobrar de verdad. Reemplaza al plan del mercado de subastas (ya mezclado en `main`, ver `CHANGELOG.md` 0.2.0).
 
 ## 1. Objetivo
 
@@ -122,6 +122,19 @@ Decisiones: `/subastas` y `/subasta/[id]` se renderizan en el servidor con `useA
 | 4 | `pages/subastas.vue` (grilla, filtro, búsqueda, vacío, error) | `curl` del HTML trae los nombres y precios; filtro y búsqueda en el navegador |
 | 5 | `pages/subasta/[id].vue` (detalle, cifras, historial, pujar, comprar ya con confirmación, avisos de pago simulado, `useHead` con título y descripción) | `curl` trae el HTML con datos; id inexistente da 404; dos pestañas ven la puja al instante; doble clic en "Pujar" hace una sola puja; monto bajo, vacío o propia carta muestran el error de la base |
 | 6 | Lint, tipos, pruebas, build e imagen con `compose` contra el Supabase local | Todo en verde en local; `/subastas` responde 200 desde el contenedor |
+
+#### 4.5 Pasos del sub-paso 1e (rama `feat/nuxt-cuenta-publicar`)
+
+Decisiones: `/mi-cuenta` y `/publicar` se arman solo en el navegador (`routeRules` con `ssr: false`) y piden sesión: sin ella, el middleware manda a `/entrar?volver=…`. Mi cuenta tiene las secciones de hoy (compras con "Pagar (simulado)", pujas agrupadas por subasta, cartas publicadas con "Cancelar publicación" y cambio de contraseña), con anclas `#compras`, `#pujas`, `#publicaciones` y `#seguridad`. Pagar y cancelar piden confirmación dentro de la página (no `confirm()`). Publicar se abre desde el catálogo con `?juego=&ref=&nombre=&imagen=` (solo imágenes `https://`) o se llena a mano; muestra lo que recibe el vendedor según `configuracion`. Los puntos de intercambio (en `localStorage`) quedan para 1g. Las reglas las valida Postgres (`publicar_carta`, `cancelar_publicacion`, `simular_pago`, RLS); la UI solo da mensajes antes.
+
+| # | Paso | Cómo se demuestra |
+|---|---|---|
+| 1 | `utils/mercado.ts`: tipos de `ventas`, `publicaciones` y `configuracion`, textos de estado, `agruparPujas`, `validarPublicacion`, `calcularPublicacion`, `paramsPublicar` (desde la URL) y `urlPublicar` (desde una carta) | Pruebas de Vitest |
+| 2 | Middleware: rutas que piden sesión mandan a `/entrar?volver=…`; `routeRules` sin SSR para `/mi-cuenta` y `/publicar` | Prueba de la lista de rutas; en el navegador, sin sesión vuelve a la página tras entrar |
+| 3 | `pages/publicar.vue` (formulario, cálculo en vivo, éxito con código de envío) y botón "Subastar esta carta" en `DetalleCarta`; link "Publicar una carta" en `/subastas` | En el navegador: campos vacíos o mínimo sobre la base dan error; doble clic publica una sola vez; desde el catálogo llegan nombre e imagen |
+| 4 | `pages/mi-cuenta.vue` con las cuatro secciones, confirmaciones y el aviso de pago simulado; link "Mi cuenta" en la barra | En el navegador: pagar (simulado), cancelar, cambiar contraseña; recarga con `#publicaciones` baja a la sección |
+| 5 | Datos de prueba en el Supabase local: publicar, aprobar como admin (SQL, el admin llega en 1f) y ver la carta en `/subastas` | La carta publicada aparece en `/subastas` |
+| 6 | Lint, tipos, pruebas, build e imagen con `compose` | Todo en verde en local; `/mi-cuenta` responde 200 desde el contenedor |
 
 Despliegue en el VPS (Caddy + Cloudflare, imagen en GHCR por SHA) se prepara al final del paso 1 o al empezar el backend, lo que ocurra primero.
 
