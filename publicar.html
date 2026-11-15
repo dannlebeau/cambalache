@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Publica tu carta en una subasta de Cambalache: nos la envías, la revisamos y la subastamos.">
+    <title>Publicar una carta | Cambalache</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="assets/css/tema.css">
+    <script src="assets/js/tema.js"></script>
+    <link rel="stylesheet" href="assets/css/base.css">
+</head>
+<body>
+
+<nav>
+    <a href="index.html" class="nav-logo"><i class="fas fa-shuffle"></i> Cambalache</a>
+    <ul class="nav-links">
+        <li><a href="index.html">Catálogo</a></li>
+        <li><a href="subastas.html" aria-current="page">Subastas</a></li>
+        <li><a href="canasto.html">Intercambios</a></li>
+        <li><a href="acerca-de.html">Acerca de</a></li>
+        <li><button type="button" class="tema-toggle" data-tema-toggle aria-label="Cambiar tema"></button></li>
+        <li id="navAccount"></li>
+    </ul>
+</nav>
+
+<main>
+    <div class="cabecera">
+        <span class="eyebrow">Vender</span>
+        <h1>Publicar una carta</h1>
+        <p>Nos envías la carta, la revisamos y queda en custodia; recién entonces se publica en una
+           subasta de 3 días. Cuando se vende, Cambalache se queda con el 10% y tú recibes el 90%.</p>
+    </div>
+    <div id="contenido"></div>
+</main>
+
+<footer>
+    <a href="subastas.html">Subastas</a> · <a href="acerca-de.html">Acerca de</a> · <a href="terminos.html">Términos y Condiciones</a> · <a href="privacidad.html">Política de Privacidad</a>
+</footer>
+
+<script src="assets/js/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js" integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK" crossorigin="anonymous"></script>
+<script src="assets/js/shared.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/mercado.js"></script>
+<script src="assets/js/publicar.js"></script>
+
+</body>
+</html>

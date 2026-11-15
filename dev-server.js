@@ -20,7 +20,20 @@ const MIME = {
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
-  const filePath = path.join(__dirname, url.pathname === '/' ? 'index.html' : url.pathname);
+  let pathname;
+  try {
+    pathname = decodeURIComponent(url.pathname);
+  } catch {
+    res.writeHead(400);
+    return res.end('Ruta inválida');
+  }
+  const filePath = path.join(__dirname, pathname === '/' ? 'index.html' : pathname);
+
+  // Solo se sirven archivos dentro de la carpeta del proyecto.
+  if (!filePath.startsWith(__dirname + path.sep)) {
+    res.writeHead(404);
+    return res.end('No encontrado');
+  }
 
   fs.readFile(filePath, (err, content) => {
     if (err) {
