@@ -38,8 +38,9 @@ npm ci               # dependencias (lockfile congelado)
 npm run web:dev      # app Nuxt en desarrollo: http://localhost:3001
 npm run web:lint && npm run web:typecheck && npm run web:test
 docker compose up --build   # app Nuxt como en producción: http://localhost:3001
-supabase db start    # Postgres local con migraciones (Docker)
-supabase test db     # pruebas pgTAP
+docker compose -f compose.yaml -f compose.supabase-local.yaml up --build   # igual, contra el Supabase local
+npx supabase start   # Supabase local (Auth + Postgres) con migraciones (Docker); CLI en devDependencies, misma versión que CI
+npx supabase test db # pruebas pgTAP
 ```
 
 ## Convenciones de código
@@ -49,7 +50,7 @@ supabase test db     # pruebas pgTAP
 - Los errores de las funciones de la base se escriben en español con `raise exception`; la UI los muestra tal cual vía `mensajeError` (`auth.js`).
 - Botones que envían algo usan `conBoton` (`mercado.js`) para evitar el doble envío.
 - El proyecto es JavaScript con `package.json` y npm workspaces (`web`). Versiones exactas en `package.json` y lockfile versionado; `allowScripts` en la raíz decide qué paquetes corren scripts de instalación. No agregar otros frameworks de UI sin pedirlo.
-- **App Nuxt (`web/`):** TypeScript estricto; prohibido `v-html` con datos de la API, de la base o del usuario; configuración pública por `NUXT_PUBLIC_*` (ver `.env.example`); todo cambio pasa lint, `typecheck`, Vitest y se prueba con `docker compose up --build`.
+- **App Nuxt (`web/`):** TypeScript estricto; prohibido `v-html` con datos de la API, de la base o del usuario; configuración pública por `NUXT_PUBLIC_*` (ver `.env.example`); la cuenta se lee con `useCuenta()` y el acceso por rol o estado se decide en `app/middleware/cuenta.global.ts`; formularios que envían usan `useEnvio()` (evita el doble envío y traduce el error con `mensajeError`); todo cambio pasa lint, `typecheck`, Vitest y se prueba con `docker compose up --build`.
 - Colores como tokens CSS en `assets/css/tema.css` (y su copia en `web/app/assets/css/tema.css` mientras convivan), con su versión oscura (ver selector de tema en `dotfiles/AGENTS.md` → Webs).
 
 ## Datos sensibles a cambios

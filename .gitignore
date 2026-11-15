@@ -35,3 +35,7 @@ Desktop.ini
 .output/
 .nitro/
 .data/
+
+# Supabase CLI (estado local)
+supabase/.branches/
+supabase/.temp/

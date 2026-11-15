@@ -1,6 +1,6 @@
 # PLAN — Frontend en Nuxt y, después, backend propio (pagos reales, correos y fotos)
 
-> Estado: **decisiones técnicas tomadas (2026-11-15). Foco actual: solo el frontend (paso 1). Avance: 1a hecho (rama `feat/nuxt-esqueleto`); siguiente, 1b (el módulo `@nuxtjs/supabase` se agrega ahí, porque sin un proyecto Supabase configurado responde 500 en todas las páginas). El backend (pasos 2 a 6) queda planificado pero no se empieza hasta cerrar el paso 1.** Quedan pendientes los temas legales/tributarios antes de cobrar de verdad. Reemplaza al plan del mercado de subastas (ya mezclado en `main`, ver `CHANGELOG.md` 0.2.0).
+> Estado: **decisiones técnicas tomadas (2026-11-15). Foco actual: solo el frontend (paso 1). Avance: 1a hecho (PR #6); 1b hecho (rama `feat/nuxt-auth`, pasos en la sección 4.2); siguiente, 1c (catálogo). El backend (pasos 2 a 6) queda planificado pero no se empieza hasta cerrar el paso 1.** Quedan pendientes los temas legales/tributarios antes de cobrar de verdad. Reemplaza al plan del mercado de subastas (ya mezclado en `main`, ver `CHANGELOG.md` 0.2.0).
 
 ## 1. Objetivo
 
@@ -86,6 +86,17 @@ Foco actual. La app nueva vive en `web/` y **el sitio estático actual sigue fun
 | 1f | **Panel de admin** (recepción, ventas, devoluciones, reglas, usuarios) | Un usuario no admin no accede a las rutas ni a las funciones |
 | 1g | **Canasto e intercambios** y textos legales (términos, privacidad, acerca de) | Intercambio simulado completo; textos con las reglas vigentes |
 | 1h | Retirar el sitio estático antiguo y `dev-server.js`; actualizar `AGENTS.md`, `README.md` y la tabla de estructura | Sin enlaces rotos; el README explica cómo levantar todo con `compose` |
+
+#### 4.2 Pasos del sub-paso 1b (rama `feat/nuxt-auth`)
+
+| # | Paso | Cómo se demuestra |
+|---|---|---|
+| 1 | Supabase local con el CLI como `devDependency` (misma versión que CI) | `npx supabase start` aplica la migración |
+| 2 | Módulo `@nuxtjs/supabase` con sesión en cookies (SSR); sin `.env` la app no arranca bien, así que `.env.example` trae los datos del Supabase local | La página de inicio responde 200 con el `.env` local |
+| 3 | `useCuenta` (perfil de `perfiles`), middleware global y barra de navegación | La barra muestra el nombre ya en el HTML del servidor |
+| 4 | Páginas `/entrar`, `/registro`, `/cambiar-password`, y salir | Registrar, entrar y salir en el navegador; doble clic no duplica; campos vacíos dan error |
+| 5 | Cuenta bloqueada y contraseña temporal | Usuario con `bloqueado` no queda con sesión; con `debe_cambiar_password` solo puede ir a cambiarla |
+| 6 | Pruebas unitarias (validación y mensajes), lint, tipos, build, imagen con `compose` | Todo en verde en local |
 
 Despliegue en el VPS (Caddy + Cloudflare, imagen en GHCR por SHA) se prepara al final del paso 1 o al empezar el backend, lo que ocurra primero.
 

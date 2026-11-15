@@ -4,6 +4,23 @@ Todos los cambios relevantes de este proyecto se documentan en este archivo.
 
 El formato sigue [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) y el proyecto usa [Versionado Semántico](https://semver.org/lang/es/).
 
+## [0.4.0] - 2026-11-15
+
+### Added
+
+- Cuentas en la app Nuxt con `@nuxtjs/supabase` (sesión en cookies, así que el SSR ya trae el nombre en el nav): `/registro`, `/entrar`, salir y `/cambiar-password` para la contraseña temporal del primer login.
+- Middleware global de cuenta: una cuenta bloqueada se queda sin sesión y ve el aviso en `/entrar`; con contraseña temporal solo puede ir a cambiarla; con sesión, `/entrar` y `/registro` vuelven al inicio.
+- Barra de navegación con el nombre, la etiqueta "Admin" y el botón Salir. Formularios con validación en español y sin doble envío (`useEnvio`).
+- Supabase CLI 2.122.0 (la misma versión que CI) como dependencia de desarrollo, para levantar Supabase local con `npx supabase start`.
+- `compose.supabase-local.yaml` para probar la imagen contra el Supabase local.
+- Pruebas de Vitest de validación de formularios y traducción de errores.
+- Token de color `--error` (claro y oscuro) en `tema.css`.
+
+### Changed
+
+- La app Nuxt necesita `.env` con la URL y la publishable key de Supabase; `.env.example` trae la URL del Supabase local. `npm run web:dev` lee el `.env` de la raíz.
+- `AGENTS.md`, `README.md` y `PLAN.md` describen las cuentas, el Supabase local y el avance de 1b. `.gitignore` excluye el estado local del CLI de Supabase.
+
 ## [0.3.0] - 2026-11-15
 
 ### Added
@@ -84,6 +101,7 @@ El formato sigue [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) 
 - Font Awesome desde cdnjs con SRI (`integrity` + `crossorigin`).
 - `dev-server.js` solo sirve archivos dentro de la carpeta del proyecto y responde 400 a rutas mal codificadas.
 
+[0.4.0]: https://github.com/dannlebeau/cambalache/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/dannlebeau/cambalache/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/dannlebeau/cambalache/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/dannlebeau/cambalache/compare/v0.2.0...v0.2.1
