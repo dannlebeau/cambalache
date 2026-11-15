@@ -1,6 +1,6 @@
 # PLAN — Frontend en Nuxt y, después, backend propio (pagos reales, correos y fotos)
 
-> Estado: **decisiones técnicas tomadas (2026-11-15). Foco actual: solo el frontend (paso 1). Avance: 1a hecho (PR #6); 1b hecho (rama `feat/nuxt-auth`, pasos en la sección 4.2); siguiente, 1c (catálogo). El backend (pasos 2 a 6) queda planificado pero no se empieza hasta cerrar el paso 1.** Quedan pendientes los temas legales/tributarios antes de cobrar de verdad. Reemplaza al plan del mercado de subastas (ya mezclado en `main`, ver `CHANGELOG.md` 0.2.0).
+> Estado: **decisiones técnicas tomadas (2026-11-15). Foco actual: solo el frontend (paso 1). Avance: 1a hecho (PR #6); 1b hecho (PR #9, pasos en la sección 4.2); 1c hecho (rama `feat/nuxt-catalogo`, pasos en la sección 4.3); siguiente, 1d (subastas públicas con SSR). El backend (pasos 2 a 6) queda planificado pero no se empieza hasta cerrar el paso 1.** Quedan pendientes los temas legales/tributarios antes de cobrar de verdad. Reemplaza al plan del mercado de subastas (ya mezclado en `main`, ver `CHANGELOG.md` 0.2.0).
 
 ## 1. Objetivo
 
@@ -97,6 +97,18 @@ Foco actual. La app nueva vive en `web/` y **el sitio estático actual sigue fun
 | 4 | Páginas `/entrar`, `/registro`, `/cambiar-password`, y salir | Registrar, entrar y salir en el navegador; doble clic no duplica; campos vacíos dan error |
 | 5 | Cuenta bloqueada y contraseña temporal | Usuario con `bloqueado` no queda con sesión; con `debe_cambiar_password` solo puede ir a cambiarla |
 | 6 | Pruebas unitarias (validación y mensajes), lint, tipos, build, imagen con `compose` | Todo en verde en local |
+
+#### 4.3 Pasos del sub-paso 1c (rama `feat/nuxt-catalogo`)
+
+Decisiones: el catálogo reemplaza la portada provisoria en `/`. Las cartas se cargan **en el navegador**: el servidor manda las pestañas y la búsqueda, y así no espera a la API de Pokémon, que es lenta o se cae. "Agregar al canasto" y "Subastar esta carta" quedan para 1g y 1e. La búsqueda no queda en la URL, igual que hoy.
+
+| # | Paso | Cómo se demuestra |
+|---|---|---|
+| 1 | `utils/catalogo.ts`: tipos, normalización de YGO/Pokémon/MyL, URL de cada API y regla de "hay más"; cartas de ejemplo de MyL en `utils/myl.ts` | Pruebas de Vitest con respuestas de ejemplo |
+| 2 | `utils/catalogo.ts`: `cargarPagina` con `fetch` inyectable (400 de YGO = sin resultados, otro error = falla) y `traducir` (MyMemory) | Pruebas con `fetch` simulado: vacío, 400, 500, red caída, última página |
+| 3 | `composables/useCatalogo.ts`: estado, espera de 350 ms en la búsqueda, reinicio al cambiar de pestaña o filtro, sin doble carga, y descarte de respuestas viejas | Pruebas: doble "Cargar más" hace un solo pedido; la respuesta de una búsqueda vieja no pisa la nueva |
+| 4 | `pages/index.vue` + componentes `TarjetaCarta` y `DetalleCarta` (modal con zoom, traducción y Escape) | En el navegador: pestañas, búsqueda, filtro, "Cargar más", modal, zoom, traducción; búsqueda sin resultados y API bloqueada muestran su mensaje |
+| 5 | Lint, tipos, pruebas, build y la imagen con `compose` | Todo en verde en local; `/` responde 200 desde el contenedor |
 
 Despliegue en el VPS (Caddy + Cloudflare, imagen en GHCR por SHA) se prepara al final del paso 1 o al empezar el backend, lo que ocurra primero.
 

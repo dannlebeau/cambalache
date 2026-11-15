@@ -64,6 +64,8 @@ docker compose up --build    # imagen de producción contra un proyecto Supabase
 
 La app necesita el `.env` (URL y publishable key de Supabase); sin él, las páginas responden error 500. Ya tiene cuentas: crear cuenta (`/registro`), iniciar sesión (`/entrar`), salir y el cambio obligatorio de la contraseña temporal (`/cambiar-password`). Una cuenta bloqueada no puede quedar con sesión. La sesión va en una cookie, así que el servidor ya pinta el nav con el nombre del usuario.
 
+La portada (`/`) es el catálogo: pestañas Yu-Gi-Oh! / Pokémon / Mitos y Leyendas, búsqueda, filtro por tipo, "Cargar más" y detalle con zoom y traducción. Las cartas se cargan en el navegador desde las APIs públicas, así que el servidor no espera a que respondan. "Agregar al canasto" y "Subastar esta carta" siguen solo en el sitio actual hasta los sub-pasos 1g y 1e.
+
 Cada página tiene en el nav un selector de tema que rota Sistema → Claro → Oscuro y recuerda la elección en el navegador.
 
 ## Estructura
