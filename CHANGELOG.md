@@ -8,7 +8,7 @@ El formato sigue [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) 
 
 ### Changed
 
-- `PLAN.md` pasa a describir el backend propio (pagos reales, correos y fotos), el diagnóstico del stack de JS y las decisiones de stack (Postgres en Supabase gestionado, Flow, Resend, TypeScript con Fastify en un VPS). Solo documentación.
+- `PLAN.md` pasa a describir la migración del frontend a Nuxt (Vue 3 + TypeScript, con SSR) y, después, el backend propio en un repo aparte (pagos reales, correos y fotos), con el diagnóstico del stack y las decisiones de stack (Postgres en Supabase gestionado, Flow, Resend, VPS). Solo documentación.
 
 ## [0.2.0] - 2026-11-15
 
