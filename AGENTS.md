@@ -50,7 +50,7 @@ npx supabase test db # pruebas pgTAP
 - Los errores de las funciones de la base se escriben en español con `raise exception`; la UI los muestra tal cual vía `mensajeError` (`auth.js`).
 - Botones que envían algo usan `conBoton` (`mercado.js`) para evitar el doble envío.
 - El proyecto es JavaScript con `package.json` y npm workspaces (`web`). Versiones exactas en `package.json` y lockfile versionado; `allowScripts` en la raíz decide qué paquetes corren scripts de instalación. No agregar otros frameworks de UI sin pedirlo.
-- **App Nuxt (`web/`):** TypeScript estricto; prohibido `v-html` con datos de la API, de la base o del usuario; configuración pública por `NUXT_PUBLIC_*` (ver `.env.example`); la cuenta se lee con `useCuenta()` y el acceso por rol o estado se decide en `app/middleware/cuenta.global.ts`; formularios que envían usan `useEnvio()` (evita el doble envío y traduce el error con `mensajeError`); todo cambio pasa lint, `typecheck`, Vitest y se prueba con `docker compose up --build`.
+- **App Nuxt (`web/`):** TypeScript estricto; prohibido `v-html` con datos de la API, de la base o del usuario; configuración pública por `NUXT_PUBLIC_*` (ver `.env.example`); la cuenta se lee con `useCuenta()` y el acceso por rol o estado se decide en `app/middleware/cuenta.global.ts`; formularios que envían usan `useEnvio()` (evita el doble envío y traduce el error con `mensajeError`); el catálogo de la portada usa `useCatalogo()` (en el navegador, descarta respuestas de consultas viejas) sobre `app/utils/catalogo.ts`, con `fetch` inyectable para probarlo sin red; todo cambio pasa lint, `typecheck`, Vitest y se prueba con `docker compose up --build`.
 - Colores como tokens CSS en `assets/css/tema.css` (y su copia en `web/app/assets/css/tema.css` mientras convivan), con su versión oscura (ver selector de tema en `dotfiles/AGENTS.md` → Webs).
 
 ## Datos sensibles a cambios
@@ -58,7 +58,7 @@ npx supabase test db # pruebas pgTAP
 - Las reglas de la subasta (10% comisión, 20% recargo, −10% al republicar, 72 h, 48 h de pago, incrementos, anti-sniping) son los valores por defecto de `configuracion` en la migración y se editan en Admin → Reglas. Los textos de `terminos.html`, `acerca-de.html` y `README.md` los repiten: si cambian los valores por defecto, actualizar esos textos en el mismo cambio.
 - La tarifa de intercambio ($500 CLP por carta) está en `assets/js/shared.js` (`COSTO_POR_CARTA_INTERCAMBIO`) y en los mismos textos.
 - Nunca poner la `service_role` key ni otro secreto en `assets/js/config.js` ni en el repo.
-- `assets/js/myl-data.js` es un catálogo de ejemplo sin texto copiado de cartas reales; no agregar contenido con derechos.
+- `assets/js/myl-data.js` (y su copia `web/app/utils/myl.ts`) es un catálogo de ejemplo sin texto copiado de cartas reales; no agregar contenido con derechos.
 
 ## Flujo de trabajo
 

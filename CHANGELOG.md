@@ -4,6 +4,19 @@ Todos los cambios relevantes de este proyecto se documentan en este archivo.
 
 El formato sigue [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) y el proyecto usa [Versionado Semántico](https://semver.org/lang/es/).
 
+## [0.5.0] - 2026-11-15
+
+### Added
+
+- Catálogo en la portada de la app Nuxt (`/`): pestañas Yu-Gi-Oh! / Pokémon / Mitos y Leyendas, búsqueda con espera de 350 ms, filtro por tipo, "Cargar más" de a 24 cartas ordenadas por ID, y detalle en `<dialog>` con zoom (Escape cierra solo el zoom) y traducción al español con MyMemory. Las cartas se cargan en el navegador.
+- Mensajes para búsqueda sin resultados, API caída (con "Reintentar") y error al cargar más sin perder lo ya cargado.
+- Pruebas de Vitest del catálogo con `fetch` simulado: normalización, URL, 400 de YGOPRODeck como "sin resultados", errores de red, fin de la lista, espera de la búsqueda, doble "Cargar más" y respuestas viejas descartadas.
+
+### Changed
+
+- A diferencia del sitio actual, cambiar de pestaña, filtro o búsqueda mientras carga ya no se pierde: gana la última consulta.
+- `PLAN.md` (sección 4.3), `AGENTS.md` y `README.md` describen el catálogo de la app Nuxt.
+
 ## [0.4.0] - 2026-11-15
 
 ### Added
@@ -101,6 +114,7 @@ El formato sigue [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) 
 - Font Awesome desde cdnjs con SRI (`integrity` + `crossorigin`).
 - `dev-server.js` solo sirve archivos dentro de la carpeta del proyecto y responde 400 a rutas mal codificadas.
 
+[0.5.0]: https://github.com/dannlebeau/cambalache/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/dannlebeau/cambalache/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/dannlebeau/cambalache/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/dannlebeau/cambalache/compare/v0.2.1...v0.2.2
