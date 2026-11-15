@@ -16,6 +16,7 @@ function salir() {
     <nav class="nav-links" aria-label="Secciones">
       <NuxtLink to="/">Catálogo</NuxtLink>
       <NuxtLink to="/subastas" :aria-current="$route.path.startsWith('/subasta') ? 'page' : undefined">Subastas</NuxtLink>
+      <NuxtLink v-if="cuenta" to="/mi-cuenta">Mi cuenta</NuxtLink>
     </nav>
     <nav class="nav-acciones" aria-label="Cuenta">
       <template v-if="cuenta">

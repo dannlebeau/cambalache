@@ -1,0 +1,41 @@
+/* Mi cuenta y publicar (pages/mi-cuenta.vue y pages/publicar.vue). Reusa .campo, .chip,
+   .estado, .seccion, .confirmar y .aviso-simulado del catálogo y las subastas. */
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+.ayuda{display:block;color:var(--muted);font-size:.78rem;margin-top:.25rem}
+.acciones{display:flex;flex-wrap:wrap;gap:.6rem;margin:1rem 0 0}
+.pasos{padding-left:1.2rem;display:flex;flex-direction:column;gap:.4rem}
+.panel a,.items a,.mi-cuenta .estado a{color:var(--accent-light)}
+.panel .boton,.mi-cuenta .boton{color:#fff}
+.panel .boton-secundario,.mi-cuenta .boton-secundario{color:var(--text)}
+
+.formulario-publicar,.publicar>.panel{display:flex;flex-direction:column;gap:1rem;max-width:52rem;margin:0 auto}
+.fila-campos{display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:1rem}
+.grupo{display:flex;flex-direction:column;gap:.3rem;min-width:0}
+.grupo label{font-size:.9rem;color:var(--muted)}
+.grupo .campo,.formulario-password .campo{border-radius:.6rem;width:100%}
+.grupo textarea.campo{min-height:5rem;resize:vertical}
+.campo:disabled,.campo:read-only{opacity:.75}
+.publicar-visual{max-width:160px;aspect-ratio:5/7;border-radius:10px;overflow:hidden;background:var(--bg3)}
+.publicar-visual img{width:100%;height:100%;object-fit:cover}
+.calculo{background:var(--bg3);border-radius:10px;padding:.8rem}
+.check{display:flex;gap:.6rem;align-items:flex-start;font-size:.9rem}
+.check input{margin-top:.2rem}
+.formulario-publicar .boton{align-self:flex-start}
+
+.items{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.6rem}
+.item{display:flex;gap:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:.8rem}
+.item-visual{flex:0 0 56px;aspect-ratio:5/7;border-radius:6px;overflow:hidden;background:var(--bg3)}
+.item-visual img{width:100%;height:100%;object-fit:cover}
+.item-info{display:flex;flex-direction:column;gap:.3rem;min-width:0}
+.item-acciones{margin-top:.3rem}
+.item .confirmar{margin-top:.3rem}
+.estado-chip{font-size:.75rem;font-weight:600;padding:.1rem .5rem;border-radius:999px;background:var(--bg3);color:var(--muted)}
+.estado-chip.warn{color:var(--warn)}
+.estado-chip.activo{color:var(--accent-light)}
+.estado-chip.ok{color:var(--ok)}
+.items .chip{font-size:.6rem}
+
+.formulario-password{display:flex;flex-direction:column;gap:.4rem;max-width:26rem}
+.formulario-password label{font-size:.9rem;color:var(--muted);margin-top:.4rem}
+.formulario-password .boton{margin-top:.9rem;align-self:flex-start}

@@ -64,6 +64,13 @@ export function rutaVolver(valor: unknown): string {
   return texto
 }
 
+// Rutas que solo tienen sentido con sesión: sin ella, el middleware manda a /entrar?volver=.
+export const RUTAS_CON_SESION = ['/mi-cuenta', '/publicar']
+
+export function requiereSesion(path: string): boolean {
+  return RUTAS_CON_SESION.some(r => path === r || path.startsWith(`${r}/`))
+}
+
 // Mensaje en español para errores de Supabase. Los de las funciones de la base ya vienen
 // en español (raise exception); los de Auth y de red se traducen aquí.
 export function mensajeError(err: unknown): string {

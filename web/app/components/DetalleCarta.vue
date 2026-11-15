@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { JUEGOS, traducir, type Carta } from '~/utils/catalogo'
+import { urlPublicar } from '~/utils/mercado'
 
 // Detalle de una carta en un <dialog> nativo (Escape y foco atrapado vienen del navegador),
 // con zoom de la imagen y traducción al español con MyMemory.
@@ -97,6 +98,9 @@ async function alternarTraduccion() {
           <li v-for="m in carta.meta" :key="m.k"><strong>{{ m.k }}:</strong> {{ m.v }}</li>
         </ul>
         <p class="detalle-desc">{{ descripcion }}</p>
+        <p class="detalle-acciones">
+          <NuxtLink :to="urlPublicar(carta)" class="boton">Subastar esta carta</NuxtLink>
+        </p>
         <div v-if="carta.idiomaOriginal === 'en'" class="detalle-acciones">
           <button type="button" class="boton boton-secundario" :disabled="traduciendo" @click="alternarTraduccion">
             {{ traduciendo ? 'Traduciendo…' : verTraduccion ? 'Ver original (inglés)' : 'Traducir al español' }}

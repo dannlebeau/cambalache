@@ -51,6 +51,7 @@ useSubastasEnVivo(() => refresh())
         Cada carta ya está en custodia de Cambalache: la revisamos antes de publicarla. Puja o
         cómprala de inmediato; el ganador paga y se la despachamos.
       </p>
+      <p><NuxtLink to="/publicar" class="boton boton-secundario">Publicar una carta</NuxtLink></p>
     </header>
     <p class="aviso-simulado">
       <strong>Pagos en modo prueba:</strong> las pujas y compras son reales dentro del sitio, pero el
