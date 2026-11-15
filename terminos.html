@@ -9,21 +9,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="assets/css/tema.css">
+    <script src="assets/js/tema.js"></script>
 
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
-        :root{
-            --bg:#0d0b16;--bg2:#161226;--bg3:#1f1a33;
-            --text:#f1eefc;--muted:#9c93b8;--border:rgba(255,255,255,.09);--accent:#8b5cf6;--accent-light:#b794ff
-        }
         body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;line-height:1.7;position:relative}
         body::before{
             content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
             background:radial-gradient(ellipse 900px 500px at 50% -10%,rgba(139,92,246,.15),transparent 60%);
         }
         a{color:var(--accent-light)}
-        nav{position:sticky;top:0;z-index:100;background:rgba(13,11,22,.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:1.1rem 2.5rem;display:flex;align-items:center;justify-content:space-between}
+        nav{position:sticky;top:0;z-index:100;background:var(--nav-bg);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:1.1rem 2.5rem;display:flex;align-items:center;justify-content:space-between}
         .nav-logo{display:flex;align-items:center;gap:.6rem;text-decoration:none;font-family:'Sora',sans-serif;font-weight:800;color:var(--text);font-size:1.1rem}
         .nav-logo i{color:var(--accent)}
         .back{font-size:.85rem;color:var(--muted);text-decoration:none}
@@ -52,7 +50,10 @@
 
 <nav>
     <a href="index.html" class="nav-logo"><i class="fas fa-shuffle"></i> Cambalache</a>
-    <a href="index.html" class="back"><i class="fas fa-arrow-left"></i> Volver al inicio</a>
+    <div class="nav-acciones">
+        <a href="index.html" class="back"><i class="fas fa-arrow-left"></i> Volver al inicio</a>
+        <button type="button" class="tema-toggle" data-tema-toggle aria-label="Cambiar tema"></button>
+    </div>
 </nav>
 
 <main>
