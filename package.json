@@ -22,6 +22,6 @@
     "esbuild": false
   },
   "devDependencies": {
-    "supabase": "2.122.0"
+    "supabase": "3.1.0"
   }
 }
